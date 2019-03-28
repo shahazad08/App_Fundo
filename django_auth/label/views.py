@@ -182,7 +182,7 @@ class getLabelOnNotes(APIView):
             label_id = request.POST.get('label_id')
             label = MapLabel.objects.filter(label_id=label_id).values() # Filter down a queryset based on a model's=
             print("Labelss", label)
-            l = []  # Converting the query sets to a json format
+            l = []  
             for i in label:
                 l.append(i)
             return JsonResponse(l, safe=False)
