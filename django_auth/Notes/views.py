@@ -10,7 +10,7 @@ from rest_framework.generics import CreateAPIView,DestroyAPIView,UpdateAPIView  
 from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
 from rest_framework.views import APIView  # Taking the views of REST framework Request & Response
-from .serializers import PageNoteSerializer,NoteSerializer,CollaborateSerializer, ColorSerializer
+from .serializers import PageNoteSerializer,NoteSerializer,CollaborateSerializer, ColorSerializer, UpdateSerializer,RemainderSerializer
 from rest_framework.decorators import api_view
 from django.conf import settings
 from rest_framework import generics  # For a List API use a generics
@@ -25,20 +25,21 @@ from .custom_decorator import custom_login
 
 
 class create(CreateAPIView):
+    """
+           This module is to create a Note to a particular note of a specific user
+       """
     serializer_class=NoteSerializer
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def post(self, request, *args,**kwargs):
+    def post(self, request):
         res = {}
         if request.method == 'POST':
             auth_user = request.user_id.id  # get the id of a specific user through token
-            print("Users", auth_user)
             try:
                 title = request.data['title']  # get the title
                 description = request.data['description']  # get the description
                 color = request.data['color']  # get the color
-                remainder=request.data['remainder']
-                notes = CreateNotes(title=title, description=description, color=color,remainder=remainder,
+                notes = CreateNotes(title=title, description=description, color=color,
                                     user_id=auth_user)  # assigned in the notes
                 if title != "" and description != "":  # if not null
                     notes.save()  # add in a db
@@ -46,7 +47,7 @@ class create(CreateAPIView):
                     res['success'] = True
                     res['data'] = notes.id
                     return JsonResponse(res, status=200)
-                else:  # else Unsuccess
+                else:
                     res['message'] = 'Unssucesss'
                     res['success'] = False
                     return JsonResponse(res, status=404)
@@ -104,9 +105,7 @@ class get(APIView):
     def get(self, request):
         res = {}
         a_user = request.user_id.id  # get the id though a token
-        print("Users",a_user)
         try:
-            print("----------")
             read_notes = CreateNotes.objects.filter(user=a_user).values()  # display the notes of a particular user
             print("****", read_notes)
             values = CreateNotes.collaborate.through.objects.filter(
@@ -194,7 +193,10 @@ class restore(APIView):
 
 
 class update(UpdateAPIView):
-    serializer_class=NoteSerializer
+    '''
+        This module is to Update a note of a specific user
+          '''
+    serializer_class=UpdateSerializer
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
     def put(self,request,pk):
@@ -210,9 +212,11 @@ class update(UpdateAPIView):
                 title = request.data['title']  # Updates the tile or any user fields
                 description = request.data['description']
                 color = request.data['color']
+                remainder = request.data['remainder']
                 notes.title = title  # Assign the updated fields to a requsted note
                 notes.description = description
                 notes.color = color
+                notes.remainder=remainder
                 notes.save()  # save in a db
                 res['message'] = "Update Successfully"
                 res['success'] = True
@@ -290,10 +294,11 @@ class isarchive(APIView):  # Delete a Note
 
 
 class color(UpdateAPIView):  # Delete a Note
+    """
+       This module is set a color to a note of a specific user
+      """
     serializer_class=ColorSerializer
-    """
-     This module is set a color to a note of a specific user
-    """
+
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
     def put(self, request,pk):
@@ -366,7 +371,6 @@ class ispinned(APIView):
         res['message'] = 'Something bad happened'  # If any fault Exception, shows the message
         res['success'] = False
         try:
-            # id = request.POST.get('id', None)  # get a id of a user
             if pk is None:  # If id is None
                 raise Exception('Id is required')  # Raise a Exception
             else:
@@ -397,7 +401,6 @@ class copy(APIView):
         res['message'] = 'Something bad happened'
         res['success'] = False
         try:
-            # id = request.POST.get('id', None)  # Get a note id of a specific user
             if pk is None:  # If id is None
                 raise Exception('Id is required')  # Raise a exception if id not present
             else:
@@ -414,6 +417,9 @@ class copy(APIView):
 
 
 class remainder(APIView): # get the remainder
+    '''
+          This module is to get a remainder note of a specific user
+          '''
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
     def get(self,request):
@@ -438,10 +444,11 @@ class remainder(APIView): # get the remainder
 
 
 class collaborator(CreateAPIView):
-    serializer_class=CollaborateSerializer
     """
         This module is to create a collaborator to a particular note of a specific user
-    """
+      """
+    serializer_class=CollaborateSerializer
+
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
     def post(self, request,pk):  # get the require pk
@@ -483,27 +490,26 @@ class collaborator(CreateAPIView):
             return JsonResponse(res, status=404)
 
 
-class deletecollaborator(CreateAPIView):
-    serializer_class=CollaborateSerializer
+class deletecollaborator(DestroyAPIView):
     """
-        This module is to delete a collaborator to a particular note of a specific user
-     """
+           This module is to delete a collaborator to a particular note of a specific user
+        """
+    serializer_class=CollaborateSerializer
+
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def delete(self, request,pk):
+    def delete(self, request,note_id,user_id):
         auth_user = request.user_id.id # get the requested id
         res = {}
         res['message'] = 'Something bad happend' # raise the exception if bad happens
         res['success'] = False
         try:
-            if pk is None:  # if id is none
+            if note_id is None:  # if id is none
                 raise Exception('id is required')
             else:
-                note = CreateNotes.objects.get(pk=pk, user=auth_user) # note id with a specific user
+                note = CreateNotes.objects.get(pk=note_id, user=auth_user) # note id with a specific user
                 auth_user = note.user.id  # Use vairable b as a Note User
-                collaborate = request.data['collaborate']  # Accept a id of a new user
-                print(collaborate)
-                user = User.object.get(id=collaborate)  # get the details of a users from a User table
+                user = User.object.get(id=user_id)  # get the details of a users from a User table
                 if auth_user == user.id: # check for a collaborator when id is same
                     res['message'] = 'Cannot Collaborate to the same User'
                     res['success'] = False
@@ -519,8 +525,35 @@ class deletecollaborator(CreateAPIView):
             res['message'] = 'Note doesnt exists'
             return JsonResponse(res, status=404)
 
+class create_remainder(CreateAPIView):
+    serializer_class=RemainderSerializer # Get the remainder Serializer
+    @method_decorator(custom_login_required) # Get the User
+    def post(self,request,pk): # Passs the Id
+        auth_user=request.user_id.id
+        res={}
+        try:
+            if pk is None: # If id is None
+                raise Exception("Id is required") # raise Exception
+            else:
+                note = CreateNotes.objects.get(pk=pk, user=auth_user) # Assign according to the User
+                remainder=request.data['remainder'] # Get the remainder field
+                note.remainder=remainder # Set the Remainder
+                note.save() # save db
+                res['message'] = 'Remainder Set Successfully '  # message in a SMD format
+                res['success'] = True
+                res['data'] = note.id
+                return JsonResponse(res,status=200)
+        except Exception as e: # return False
+            res['message']="Note Doesnot Exists"
+            res['success']=False
+            return JsonResponse(res,status=404)
+
+
 
 class PostListAPIView(generics.ListAPIView):  # Viweing the ListAPI Views that
+    """
+        This module is to Paginate a Pages of a Notes
+         """
     serializer_class = PageNoteSerializer  # Assigning a Notes serializers fields in a Serializer class
     filter_backends = [SearchFilter, OrderingFilter]
     # search_fields=['title','description']
