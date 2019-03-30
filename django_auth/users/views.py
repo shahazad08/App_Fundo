@@ -16,12 +16,11 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from requests import auth
 from rest_framework_jwt.settings import api_settings
 from django.http import JsonResponse
-from .serializers import UserSerializer, LoginSerializer, LabelSerializer
+from .serializers import UserSerializer, LoginSerializer
 from rest_framework.renderers import TemplateHTMLRenderer
 from .models import User
 from django.http import HttpResponse
 from django.shortcuts import render
-# from rest_framework import serializers, status
 from rest_framework.generics import CreateAPIView  # Used for a create-only endpoints, provides a post method handler
 from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
@@ -30,13 +29,9 @@ from django.contrib.auth import logout
 from .tokens import account_activation_token
 from django.urls import reverse
 from .forms import SignupForm
-from .serializers import NoteSerializer, ReadNoteSerializer, PageNoteSerializer
 from rest_framework.decorators import api_view
-# from .models import User, CreateNotes, Labels, MapLabel
 from django.conf import settings
 from rest_framework import generics  # For a List API use a generics
-# from .paginate import PostLimitOffsetPagination, PostPageNumberPagination  # Creating our own no. of records in a Pages
-# from rest_framework.filters import SearchFilter  # it allows users to filter down a queryset based on a model's
 from django.contrib.auth import authenticate, login
 from django.urls import reverse
 from django.core.cache.backends.base import DEFAULT_TIMEOUT  # Setting a time for a cache to store
@@ -48,6 +43,9 @@ import imghdr
 from PIL import Image
 from django.views.decorators.http import require_http_methods
 
+
+def index(request):
+    return render(request, "index.html", {})  # home page
 
 def home(request):
     return render(request, "home.html", {})  # home page
@@ -80,6 +78,9 @@ def signup(request):
     return render(request, 'signup.html', {'form': form})
 
 class Registerapi(CreateAPIView):
+    """
+        This module is Register the User
+         """
     serializer_class = UserSerializer
 
     def post(self, request):
@@ -89,10 +90,9 @@ class Registerapi(CreateAPIView):
         print(request.data)
         email = request.data['email']
         print(email)
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        # date_joined=request.data['date_joined']
-        password = request.POST.get('password')
+        first_name = request.data['first_name']
+        last_name = request.data['last_name']
+        password = request.data['password']
 
         if email and password is not "":
 
@@ -124,7 +124,6 @@ class Registerapi(CreateAPIView):
         else:
             return JsonResponse(res)
 
-
 def activate(request, uidb64, token):
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))  # UserId for a decoding
@@ -137,7 +136,6 @@ def activate(request, uidb64, token):
             return HttpResponse('Activation link is invalid!')
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
-
 
 
 @api_view(['POST'])
@@ -196,6 +194,9 @@ def exit(request):  # For a Logout
 
 
 class Login(CreateAPIView):
+    """
+        This module is to Login
+         """
     serializer_class=LoginSerializer
     def post(self, request):
         res = {}
@@ -248,64 +249,51 @@ def upload_profilenew(request):
     token_decode = jwt.decode(token, "secret_key", algorithms=['HS256'])
     eid = token_decode.get('email')  # Additional code of a decorator to get an email
     user = User.object.get(email=eid)
-    # user = User.object.get(id=user_id.id)
-    # user=user_id.id
-    print ('user-----------', user)
     try:
         file = request.FILES['pic']  # Uploading a Pic
-        tag_file = request.POST.get('email')
-        print('keysysy',tag_file)
-        valid_image = imghdr.what(file)
-        print("vi", valid_image)
-        if str(user)==tag_file:
-            if valid_image:
-                upload_image(file, tag_file, valid_image)
-                user.image = str(file)
-                print("Fileeeeeee", valid_image)
-                print("Imagee", user.image)
-                user.save()
-                print('saved')
-                print("Image Extension", valid_image)
-                res['message'] = "Sucessfully Uploaded the Image"
+        tag_file = request.POST.get('email') # Load an id of a user
+        valid_image = imghdr.what(file) # Validate the image file
+        if str(user)==tag_file: # if user:
+            if valid_image: # if Valid Image
+                upload_image(file, tag_file, valid_image) # Upload the image by calling the service file
+                user.image = str(file) # save a image file in db
+                user.save() # file save
+                res['message'] = "Sucessfully Uploaded the Image" # message
                 res['Sucess'] = True
                 return JsonResponse(res, status=200)
             else:
-                res['message'] = "Invalid Image"
+                res['message'] = "Invalid Image"    # Invalid Image
                 res['Sucess'] = False
                 return JsonResponse(res, status=404)
         else:
-            res['message'] = "Invalid"
+            res['message'] = "Invalid" # Invalid User
             res['Sucess'] = False
             return JsonResponse(res, status=404)
     except Exception as e:
         print(e)
         return HttpResponse(e)
 
+
+
 def delete_profile(request):
     """This method is used to delete any object from s3 bucket """
+
     token = redis_information.get_token(self, 'token')  # Redis Cache GET
     token_decode = jwt.decode(token, "secret_key", algorithms=['HS256'])
     eid = token_decode.get('email')  # Additional code of a decorator to get an email of a user
-    user = User.object.get(email=eid)
-    # user = User.object.get(id=user_id.id)
-    print('user-----------', user)
-    tag_file = request.POST.get('email')
+    user = User.object.get(email=eid) # Authorize User
+    tag_file = request.POST.get('email')  # Particular user upload image
     res={}
     try:
-        print('keys_to_delete', tag_file)
-        print("Usr******",type(user))
-        print("TF----",type(tag_file))
-        print('Users',user)
-        if str(user)==tag_file:
-            delete_from_s3(tag_file)
-            user.image=" "
-            user.save()
-            print("Delete It")
-            res['message'] = "Succesfully Deleted"
+        if str(user)==tag_file: # if user
+            delete_from_s3(tag_file) # delete image through S3 by calling service file method
+            user.image=" " # image Null
+            user.save() # save in db
+            res['message'] = "Succesfully Deleted" # message for deletion
             res['Sucess'] = True
             return JsonResponse(res, status=200)
         else:
-            res['message'] = "Not Deleted"
+            res['message'] = "Not Deleted" # False
             res['Sucess'] = False
             return JsonResponse(res, status=404)
     except Exception as e:
