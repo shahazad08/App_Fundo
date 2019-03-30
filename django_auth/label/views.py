@@ -2,20 +2,17 @@ from django.shortcuts import render
 import json
 from users import models
 from users import views
-from users.models import User,CreateNotes,Labels,MapLabel
+from users.models import User,CreateNotes,Labels, MapLabel
 from rest_framework.generics import CreateAPIView, DestroyAPIView, UpdateAPIView  # Used for a create-only endpoints, provides a post method handler
-from rest_framework.response import Response
-from rest_framework.validators import UniqueValidator
 from rest_framework.views import APIView  # Taking the views of REST framework Request & Response
 from rest_framework.decorators import api_view
 from .serializers import ReadLabel,LabelSerializer
 from django.conf import settings
-from rest_framework import generics  # For a List API use a generics
+from rest_framework import generics, status  # For a List API use a generics
 from users.custom_decorators import custom_login_required
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
 from self import self
-from users.services import redis_information
 import jwt
 
 
@@ -134,11 +131,11 @@ class add(APIView):
                     res['data'] = note.id  # message of passing data in a SMD format
                     res['message'] = 'Labels are added to a particular note'
                     res['success'] = True
-                    return JsonResponse(res, status=status.HTTP_201_CREATED)
+                    return JsonResponse(res, status=200)
                 else:
                     res['message'] = ' Labels Allready added'  # Something wrong
                     res['success'] = False
-                    return JsonResponse(res, status=status.HTTP_201_CREATED)
+                    return JsonResponse(res, status=200)
         except CreateNotes.DoesNotExist: # Handles Exception when notes are not present
             res['message'] = 'Note doesnt exists'
             return JsonResponse(res, status=404)

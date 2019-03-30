@@ -32,7 +32,6 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):  # User model is the built-in Django model that provides
     # us with username , email , password , first_name , and last_name fields.
-    # username=models.(max_length=40,unique=True)
     email = models.EmailField(max_length=40, unique=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30, blank=True)

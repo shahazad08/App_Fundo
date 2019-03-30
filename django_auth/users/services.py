@@ -10,7 +10,7 @@ import redis
 import json
 from django.http import JsonResponse
 from .models import User
-from self import self
+# from self import self
 import jwt
 from PIL import Image
 s3 = boto3.client('s3')  # Connection for S3

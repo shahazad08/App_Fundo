@@ -5,29 +5,19 @@ def custom_login_required(function):
     def wrap(request, *args, **kwargs):
         res = {}
         try:
-            print("Hello")
-            print(request.META)
-            print(request.META.get('HTTP_AUTHORIZATION'))
-            token = request.META.get('HTTP_AUTHORIZATION')
-            print(token)
-            # token_split = token.split(' ')
-            # token_get = token_split[1]
-            # print("My Token:", token_get)
-            token_decode = jwt.decode(token, "secret_key", algorithms=['HS256'])
+            print(request.META.get('HTTP_AUTHORIZATION')) # Header
+            token = request.META.get('HTTP_AUTHORIZATION') # Get a Token from a Header
+            token_decode = jwt.decode(token, "secret_key", algorithms=['HS256']) # Decode the Token
             eid = token_decode.get('email')     # Additional code of a decorator to get an email
-            user_id = User.object.get(email=eid)
-            # entry = User.object.get(pk=user_id.id)
-            entry=user_id
-            print("User",entry)
-            request.user_id = user_id
-            if entry:
-                return function(request, *args, **kwargs)
+            user_id = User.object.get(email=eid) # Get the User Id
+            entry=user_id # Assign the User Id
+            request.user_id = user_id # Request the User Id
+            if entry: # If User ID
+                return function(request, *args, **kwargs)  # Return Outer Function
             else:
-                raise PermissionDenied
-        except Exception as e:
+                raise PermissionDenied  # Invalid
+        except Exception as e: # Raise Exception
             print(e)
             res['message'] = 'Something bad happend'
             return JsonResponse(res, status=404)
-            # return function(request, *args, **kwargs)
-    return wrap
-
+    return wrap # Return Inner Function

@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/note/<int:pk>/copy/', views.copy.as_view(), name='copy'),  # Update with Pk
     path('api/note/remainder/', views.remainder.as_view(), name='remainder'),
     path('api/note/<int:pk>/collaborate/', views.collaborator.as_view(), name='collaborator'),
-    path('api/note/<int:pk>/collaborator/delete/', views.deletecollaborator.as_view(), name='deletecollaborator'),
+    path('api/note/<int:note_id>/<int:user_id>collaborator/delete/', views.deletecollaborator.as_view(), name='deletecollaborator'),
+    path('api/note/<int:pk>/set_remainder/', views.create_remainder.as_view(),name='set_remainder'),
     path('api/note/pages/', views.PostListAPIView.as_view(), name='pages'),  # Paginate
 ]

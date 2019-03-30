@@ -1,6 +1,6 @@
 from users import models
+from users.models import User,CreateNotes
 from users import views
-from users.models import User,CreateNotes,Labels,MapLabel
 import json
 from rest_framework.filters import OrderingFilter
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -8,10 +8,9 @@ from django.http import JsonResponse
 from django.core.paginator import Paginator
 from rest_framework.generics import CreateAPIView,DestroyAPIView,UpdateAPIView  # Used for a create-only endpoints, provides a post method handler
 from rest_framework.response import Response
-from rest_framework.validators import UniqueValidator
 from rest_framework.views import APIView  # Taking the views of REST framework Request & Response
-from .serializers import PageNoteSerializer,NoteSerializer,CollaborateSerializer, ColorSerializer, UpdateSerializer,RemainderSerializer
-from rest_framework.decorators import api_view
+from .serializers import PageNoteSerializer,NoteSerializer,CollaborateSerializer, ColorSerializer, UpdateSerializer, RemainderSerializer
+# from rest_framework.decorators import api_view
 from django.conf import settings
 from rest_framework import generics  # For a List API use a generics
 from .paginate import PostLimitOffsetPagination, PostPageNumberPagination  # Creating our own no. of records in a Pages
@@ -19,9 +18,8 @@ from rest_framework.filters import SearchFilter  # it allows users to filter dow
 from users.custom_decorators import custom_login_required
 from django.utils.decorators import method_decorator
 from users.services import redis_information
-from self import self
+# from self import self
 import jwt
-from .custom_decorator import custom_login
 
 
 class create(CreateAPIView):
@@ -526,6 +524,9 @@ class deletecollaborator(DestroyAPIView):
             return JsonResponse(res, status=404)
 
 class create_remainder(CreateAPIView):
+    """
+        This module is to set a remainder to a note of a specific user
+        """
     serializer_class=RemainderSerializer # Get the remainder Serializer
     @method_decorator(custom_login_required) # Get the User
     def post(self,request,pk): # Passs the Id
@@ -544,6 +545,7 @@ class create_remainder(CreateAPIView):
                 res['data'] = note.id
                 return JsonResponse(res,status=200)
         except Exception as e: # return False
+            print(e)
             res['message']="Note Doesnot Exists"
             res['success']=False
             return JsonResponse(res,status=404)
