@@ -28,7 +28,6 @@ AUTHENTICATION_BACKENDS = (
     )
 
 
-
 # Application definition
 
 #Email verification
@@ -57,16 +56,6 @@ JWT_AUTH = {
 
 }
 
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django_redis.cache.RedisCache',
-#         'LOCATION': 'redis://127.0.0.1:6379/',
-#         'OPTIONS': {
-#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-#         }
-#     }
-# }
-
 
 CACHES = {
     'default': {
@@ -81,9 +70,7 @@ CACHES = {
 CACHE_TTL = 60 * 15
 
 INSTALLED_APPS = [
-    # 'Notes',
     'django.contrib.auth',
-    # 'django.admin_view_permission',
     'django.contrib.admin',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -92,7 +79,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'rest_framework',
     'django_filters',
-    'users'
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -110,11 +97,6 @@ ROOT_URLCONF = 'django_auth.urls'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-        # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
-        # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
-        # 'rest_framework.authentication.TokenAuthentication',
-
     ),
     'DEFAULT_MODEL_SERIALIZER_CLASS': (
         'rest_framework.serializers.ModelSerializer',
@@ -139,7 +121,6 @@ TEMPLATES = [
             'django.template.context_processors.request',
             'django.contrib.auth.context_processors.auth',
             'django.contrib.messages.context_processors.messages',
-
         ],
     },
 }, ]
@@ -148,32 +129,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'django_auth.wsgi.application'
 
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mydb',
-        'USER': 'dbuser',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
+        'ENGINE':os.getenv("DB_ENGINE"),
+        'NAME': os.getenv("DB_NAME"),
+        'USER':os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv("DB_HOST"),
         'PORT': '',
     }
 }
-
-#
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         # 'NAME': os.getenv("NAME", ""),
-#         'NAME': os.path.join(BASE_DIR, 'db.postgresql_psycopg2'),
-#         'USER':os.getenv("USER", ""),
-#         'PASSWORD': os.getenv("PASSWORD", ""),
-#         'HOST': 'localhost',
-#         'PORT': '',
-#     }
-# }
-
-
-# DJANGO_SETTINGS_MODULES='django_auth.settings'
 
 
 
@@ -194,7 +160,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 
 
