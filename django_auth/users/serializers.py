@@ -28,29 +28,3 @@ class LoginSerializer(serializers.ModelSerializer):  # Created the user serializ
     class Meta:
         model = User  # Contains the fields of email and a password
         fields = ['email', 'password']
-
-class NoteSerializer(serializers.ModelSerializer):
-    title= serializers.RegexField(regex=r"^[a-zA-Z0-9.' ']+$",required=True) # Title can be a indicates number,name,spaces
-    color=serializers.RegexField(regex=r"^[-\w\s]+[-\w\s]+(?:,[-\w\s]*)*$",required=True)
-
-    class Meta:
-        model = CreateNotes
-        # fields = '__all__'
-        fields = ('title', 'description', 'color','label','collaborate','user','remainder')
-
-class ReadNoteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CreateNotes
-        fields = '__all__'
-
-class PageNoteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CreateNotes
-        fields = ('title', 'description')
-
-class LabelSerializer(serializers.ModelSerializer):
-
-    label_name= serializers.RegexField(regex=r"^[a-zA-Z0-9.' ']+$",required=True) # Title can be a indicates number,name,spaces
-    class Meta:
-        model = Labels
-        fields = '__all__'
