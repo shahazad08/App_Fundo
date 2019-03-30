@@ -24,7 +24,7 @@ import jwt
 
 class create(CreateAPIView):
     """
-           This module is to create a Note to a particular note of a specific user
+           This module is to create a Note to a particular note
        """
     serializer_class=NoteSerializer
 
