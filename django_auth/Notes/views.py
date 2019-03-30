@@ -24,8 +24,8 @@ import jwt
 
 class create(CreateAPIView):
     """
-           Hello World
-       """
+      This module is to create a note of a specific user
+      """
     serializer_class=NoteSerializer
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
