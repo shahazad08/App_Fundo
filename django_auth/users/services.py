@@ -2,7 +2,6 @@
 """This file contains details about services required
     i.e. Cloud Services  and Redis
 """
-# from .views import views
 import boto3
 import imghdr
 from django.views.decorators.http import require_POST
@@ -21,14 +20,12 @@ def upload_image(file, tag_file, valid_image):
         if valid_image:  # If Image is Valid
             key = tag_file  # Assign the Key
             s3.upload_fileobj(file, 'fundoobucket', Key=key)  # Upload the image in a S3
-            # print("Filesss", type(str(file)))
     except Exception as e:
         print(e)
 
 
 def delete_from_s3(key):
     try:
-        print('Keey', key)
         """This method is used to delete any object from s3 bucket """
         if key:  # If Key
             s3.delete_object(Bucket='fundoobucket', Key=key)  # Delete the image in a S3
@@ -47,18 +44,18 @@ class redis_information:
     versions of redis-py
 
     """
-    def set_token(self, key, value): #Set the token
+    def set_token(self, key, value): # Set the token
         try:
-            if key and value:
-                r.set(key, value)
+            if key and value: # If key and Value is present i.e set
+                r.set(key, value) # redis cache is set
         except Exception as e:
             print(e)
 
-    def get_token(self, key):
+    def get_token(self, key): # Get the token
         try:
-            value = r.get(key)
-            if value:
-                return value
+            value = r.get(key) # Get the key from the cache
+            if value: # if token
+                return value # return
         except Exception as e:
             print(e)
 
