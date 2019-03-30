@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
 from rest_framework.views import APIView  # Taking the views of REST framework Request & Response
 from rest_framework.decorators import api_view
-from .serializers import ReadLabel
+from .serializers import ReadLabel,LabelSerializer
 from django.conf import settings
 from rest_framework import generics  # For a List API use a generics
 from users.custom_decorators import custom_login_required
@@ -20,6 +20,9 @@ import jwt
 
 
 class create(CreateAPIView):
+    """
+            This module is create a Label of a specific user
+           """
     serializer_class=ReadLabel
     @method_decorator(custom_login_required)  # Get a decorator
     def post(self,request):
@@ -73,6 +76,9 @@ class delete(DestroyAPIView):
             return JsonResponse(res, status=404)
 
 class update(UpdateAPIView):
+    """
+            This module is delete a Label of a specific user
+           """
     serializer_class=ReadLabel
     """
         This module is update a Label of a specific user
@@ -168,23 +174,41 @@ class deletelabel(APIView):
             print(e)
             return JsonResponse(res, status=404)
 
-class getLabelOnNotes(APIView):
+class getLabelOnNotes(CreateAPIView):
     """
-               This module is to get a label to a particular note
-       """
-    # @method_decorator(custom_login_required)
+            This module is to add a label to a particular note of a specific user
+         """
+    serializer_class=LabelSerializer
+
+    @method_decorator(custom_login_required) # Get a decorator
     def post(self, request):
-        auth_user = request.user.id
+        auth_user = request.user_id.id # Get a requested Id
         res = {}
         res['message'] = 'Something bad happened'
         res['success'] = False
         try:
-            label_id = request.POST.get('label_id')
-            label = MapLabel.objects.filter(label_id=label_id).values() # Filter down a queryset based on a model's=
-            print("Labelss", label)
-            l = []  
-            for i in label:
-                l.append(i)
-            return JsonResponse(l, safe=False)
+            label_id = request.data['label_id'] # Get a requested Id
+            if label_id is None:
+                raise Exception("Id is required")
+            else:
+                label = MapLabel.objects.filter(
+                    label_id=label_id).values()  # Filter down a queryset based on a model's=
+                data = []  # Created a Empty List
+                for i in label:  # Gets a Note id from a label data and store it in a list
+                    data.append(i['note_id_id'])
+                items = CreateNotes.objects.filter(id__in=data, user=auth_user).values() # Gets the Notes of a specific User
+                if items:   # if notes
+                    print (items)
+                    notes_data = [] # Store the Notes in a list
+                    for i in items:
+                        notes_data.append(i) # Convert the Query Set to a Json Serializer
+                    return JsonResponse(notes_data, safe=False) # Return Json Response
+                else:
+                    res['message'] = 'Note doesnt exists'
+                    res['success'] = 'False'
+                    return JsonResponse(res, status=404)
+
         except Exception as e:
             print(e)
+            res['message'] = 'Note doesnt exists'
+            return JsonResponse(res, status=404)
