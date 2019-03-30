@@ -10,22 +10,19 @@ from rest_framework import pagination
 
 class ReadLabel(serializers.ModelSerializer):
     label_name=serializers.CharField()
+
     class Meta:
-        model = CreateNotes
+        model = Labels
         fields = ['label_name']
 
+class LabelSerializer(serializers.ModelSerializer):
+    label_id=serializers.IntegerField()
 
-# class ReadNoteSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = CreateNotes
-#         fields = ('title', 'description', 'color')
-#
-#
-# class CollaborateSerializer(serializers.ModelSerializer):
-#     collaborate=serializers.IntegerField()
-#     class Meta:
-#         model = CreateNotes
-#         fields = ['collaborate']
+    class Meta:
+        model = CreateNotes
+        fields = ['label_id']
+
+
 
 
 
