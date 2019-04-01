@@ -3,17 +3,9 @@
     i.e. Cloud Services  and Redis
 """
 import boto3
-import imghdr
-from django.views.decorators.http import require_POST
-from django.utils.datastructures import MultiValueDictKeyError
 import redis
-import json
-from django.http import JsonResponse
-from .models import User
-# from self import self
-import jwt
-from PIL import Image
 s3 = boto3.client('s3')  # Connection for S3
+
 def upload_image(file, tag_file, valid_image):
     """This method is used to upload the images to Amazon s3 bucket"""
     try:

@@ -50,6 +50,7 @@ class User(AbstractBaseUser, PermissionsMixin):  # User model is the built-in Dj
 
 
 class CreateNotes(models.Model):
+
     title = models.CharField(max_length=150,default=None)
     description = models.TextField()
     created_time = models.DateTimeField(auto_now_add=True, null=True)

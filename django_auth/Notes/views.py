@@ -7,10 +7,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from rest_framework.generics import CreateAPIView,DestroyAPIView,UpdateAPIView  # Used for a create-only endpoints, provides a post method handler
-from rest_framework.response import Response
 from rest_framework.views import APIView  # Taking the views of REST framework Request & Response
 from .serializers import PageNoteSerializer,NoteSerializer,CollaborateSerializer, ColorSerializer, UpdateSerializer, RemainderSerializer
-# from rest_framework.decorators import api_view
 from django.conf import settings
 from rest_framework import generics  # For a List API use a generics
 from .paginate import PostLimitOffsetPagination, PostPageNumberPagination  # Creating our own no. of records in a Pages
@@ -18,7 +16,6 @@ from rest_framework.filters import SearchFilter  # it allows users to filter dow
 from users.custom_decorators import custom_login_required
 from django.utils.decorators import method_decorator
 from users.services import redis_information
-# from self import self
 import jwt
 
 
@@ -116,7 +113,6 @@ class get(APIView):
                 '-created_time')  # id__in indicates to take all the values
             # print("collab Notes -------------", collab_notes)
             merged = read_notes | collab_notes  # as to merging the 2 query sets into one
-            print("***", merged)
             l = []  # Converting the query sets to a json format
             for i in merged:
                 l.append(i)
@@ -136,7 +132,7 @@ class delete(DestroyAPIView):
        '''
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def delete(self, request):
+    def delete(self, request,pk):
         auth_user = request.user_id.id
         res = {}
         res['message'] = 'Something bad happened'
@@ -560,7 +556,6 @@ class PostListAPIView(generics.ListAPIView):  # Viweing the ListAPI Views that
     filter_backends = [SearchFilter, OrderingFilter]
     # search_fields=['title','description']
     pagination_class = PostPageNumberPagination  # Create our own limit of records in a pages
-
 
     def get_queryset(self, *args, **kwargs):  # Method for a itrerating of pages
         res = {}

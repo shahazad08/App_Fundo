@@ -1,57 +1,40 @@
-import json
 import jwt
 from django.views.decorators.http import require_POST
-from django.shortcuts import render
-from django.template import loader
-from django.http import JsonResponse
 from django.contrib import messages
-from django.urls import resolve
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
-from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import render_to_string
-from django.utils.datastructures import MultiValueDictKeyError
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from requests import auth
-from rest_framework_jwt.settings import api_settings
 from django.http import JsonResponse
-from .serializers import UserSerializer, LoginSerializer
-from rest_framework.renderers import TemplateHTMLRenderer
-from .models import User
+from .serializers import UserSerializer, LoginSerializer, profile, profile_delete
+from .models import User, CreateNotes, Labels
 from django.http import HttpResponse
 from django.shortcuts import render
-from rest_framework.generics import CreateAPIView  # Used for a create-only endpoints, provides a post method handler
-from rest_framework.response import Response
-from rest_framework.validators import UniqueValidator
-from rest_framework.views import APIView  # Taking the views of REST framework Request & Response
-from django.contrib.auth import logout
+from rest_framework.generics import CreateAPIView,DestroyAPIView  # Used for a create-only endpoints, provides a post method handler
 from .tokens import account_activation_token
-from django.urls import reverse
 from .forms import SignupForm
 from rest_framework.decorators import api_view
-from django.conf import settings
-from rest_framework import generics  # For a List API use a generics
 from django.contrib.auth import authenticate, login
-from django.urls import reverse
-from django.core.cache.backends.base import DEFAULT_TIMEOUT  # Setting a time for a cache to store
 from .custom_decorators import custom_login_required
 from django.utils.decorators import method_decorator
-from .services import redis_information, upload_image,delete_from_s3
+from .services import redis_information, upload_image, delete_from_s3
 from self import self
 import imghdr
-from PIL import Image
-from django.views.decorators.http import require_http_methods
+from rest_framework.parsers import FileUploadParser, FormParser, MultiPartParser
 
 
 def index(request):
     return render(request, "index.html", {})  # home page
 
+
 def home(request):
     return render(request, "home.html", {})  # home page
 
+
 def log_me(request):
     return render(request, 'user_login.html', {})
+
 
 def signup(request):
     if request.method == 'POST':  # IF method id POST
@@ -137,7 +120,6 @@ def activate(request, uidb64, token):
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
-
 @api_view(['POST'])
 @require_POST
 def logins(request):
@@ -148,7 +130,7 @@ def logins(request):
     print('**********************************loginsssss***************************')
     try:
         email = request.POST.get('email')  # Get Email
-        print("Emails",email)
+        print("Emails", email)
         password = request.POST.get('password')  # Get Password
 
         if email is None:
@@ -188,6 +170,7 @@ def logins(request):
     except Exception as e:
         print(e)
 
+
 def exit(request):  # For a Logout
     # logout(request)
     return render(request, "home.html")
@@ -197,7 +180,8 @@ class Login(CreateAPIView):
     """
         This module is to Login
          """
-    serializer_class=LoginSerializer
+    serializer_class = LoginSerializer
+
     def post(self, request):
         res = {}
         res['message'] = 'Something bad happend'
@@ -226,7 +210,6 @@ class Login(CreateAPIView):
                         res['message'] = "Login Sucessfull"
                         res['success'] = True
                         res['data'] = token_encode
-
                         redis_information.set_token(self, 'token', res['data'])
                         return JsonResponse(res, status=200)
                     except Exception as e:  # Invalid
@@ -244,35 +227,36 @@ class Login(CreateAPIView):
             print(e)
 
 def upload_profilenew(request):
-    res={}
+    res = {}
     token = redis_information.get_token(self, 'token')  # Redis Cache GET
     token_decode = jwt.decode(token, "secret_key", algorithms=['HS256'])
     eid = token_decode.get('email')  # Additional code of a decorator to get an email
     user = User.object.get(email=eid)
     try:
         file = request.FILES['pic']  # Uploading a Pic
-        tag_file = request.POST.get('email') # Load an id of a user
-        valid_image = imghdr.what(file) # Validate the image file
-        if str(user)==tag_file: # if user:
-            if valid_image: # if Valid Image
-                upload_image(file, tag_file, valid_image) # Upload the image by calling the service file
-                user.image = str(file) # save a image file in db
-                user.save() # file save
-                res['message'] = "Sucessfully Uploaded the Image" # message
-                res['Sucess'] = True
+        print("File", file)
+        tag_file = request.POST.get('email')  # Load an id of a user
+        print("tag_file", tag_file)
+        valid_image = imghdr.what(file)  # Validate the image file
+        if str(user) == tag_file:  # if user:
+            if valid_image:  # if Valid Image
+                upload_image(file, tag_file, valid_image)  # Upload the image by calling the service file
+                user.image = str(file)  # save a image file in db
+                user.save()  # file save
+                res['message'] = "Sucessfully Uploaded the Image"  # message
+                res['Success'] = True
                 return JsonResponse(res, status=200)
             else:
-                res['message'] = "Invalid Image"    # Invalid Image
-                res['Sucess'] = False
+                res['message'] = "Invalid Image"  # Invalid Image
+                res['Success'] = False
                 return JsonResponse(res, status=404)
         else:
-            res['message'] = "Invalid" # Invalid User
-            res['Sucess'] = False
+            res['message'] = "Invalid"  # Invalid User
+            res['Success'] = False
             return JsonResponse(res, status=404)
     except Exception as e:
         print(e)
         return HttpResponse(e)
-
 
 
 def delete_profile(request):
@@ -281,19 +265,19 @@ def delete_profile(request):
     token = redis_information.get_token(self, 'token')  # Redis Cache GET
     token_decode = jwt.decode(token, "secret_key", algorithms=['HS256'])
     eid = token_decode.get('email')  # Additional code of a decorator to get an email of a user
-    user = User.object.get(email=eid) # Authorize User
+    user = User.object.get(email=eid)  # Authorize User
     tag_file = request.POST.get('email')  # Particular user upload image
-    res={}
+    res = {}
     try:
-        if str(user)==tag_file: # if user
-            delete_from_s3(tag_file) # delete image through S3 by calling service file method
-            user.image=" " # image Null
-            user.save() # save in db
-            res['message'] = "Succesfully Deleted" # message for deletion
+        if str(user) == tag_file:  # if user
+            delete_from_s3(tag_file)  # delete image through S3 by calling service file method
+            user.image = " "  # image Null
+            user.save()  # save in db
+            res['message'] = " Successfully Deleted"  # message for deletion
             res['Sucess'] = True
             return JsonResponse(res, status=200)
         else:
-            res['message'] = "Not Deleted" # False
+            res['message'] = "Not Deleted"  # False
             res['Sucess'] = False
             return JsonResponse(res, status=404)
     except Exception as e:
@@ -313,6 +297,7 @@ def showarchive(request):  # Archive Show
         print(e)
         return HttpResponse(res, status=404)
 
+
 def trash(request):
     res = {}
     notes = CreateNotes.objects.all().order_by('-created_time')
@@ -327,6 +312,7 @@ def trash(request):
         print(e)
         return HttpResponse(res, status=404)
 
+
 def showpinned(request):
     res = {}
     notes = CreateNotes.objects.all().order_by('-created_time')
@@ -338,6 +324,7 @@ def showpinned(request):
         # res['success'] = False
         print(e)
         return HttpResponse(res, status=404)
+
 
 def showlabels(request):
     res = {}
@@ -356,3 +343,89 @@ def table(request):  # Display the contents of the tables using a Jinga Template
     return render(request, 'notes/index.html', {'notes': notes})
 
 
+class upload_images(CreateAPIView):
+    serializer_class = profile
+    parser_classes = (FormParser, MultiPartParser)
+
+    @method_decorator(custom_login_required)
+    def post(self, request):
+        """
+         Create a MyModel
+            Create a MyModel
+            ---
+            parameters:
+                - name: source
+                  description: file
+                  required: True
+                  type: file
+            responseMessages:
+                - code: 201
+                  message: Created
+        """
+
+        res = {}
+        user = request.user_id
+        try:
+            image = request.FILES.get('image')  # Get the image File
+            print('image', type(image))
+            tag_file = request.data['email']
+            print(tag_file)
+            valid_image = imghdr.what(image)
+            print(valid_image)
+            print("User", user)
+            if str(user) == tag_file:  # if user:
+                if valid_image:  # if Valid Image
+                    upload_image(image, tag_file, valid_image)  # Upload the image by calling the service file
+                    user.image = str(image)  # save a image file in db
+                    user.save()  # file save
+                    res['message'] = "Sucessfully Uploaded the Image"  # message
+                    res['Success'] = True
+                    return JsonResponse(res, status=200)
+                else:
+                    res['message'] = "Invalid Image"  # Invalid Image
+                    res['Success'] = False
+                    return JsonResponse(res, status=404)
+            else:
+                res['message'] = "Invalid"  # Invalid User
+                res['Success'] = False
+                return JsonResponse(res, status=404)
+        except Exception as e:
+            res['message'] = "Not Valid"  # Invalid User
+            return JsonResponse(res, status=404)
+
+
+class delete_image(DestroyAPIView):
+    serializer_class = profile_delete
+    parser_classes = (FormParser, MultiPartParser)
+
+    @method_decorator(custom_login_required)
+    def delete(self, request):
+        """
+                Create a MyModel
+                ---
+                parameters:
+                     - name: source
+                        description: file
+                        required: True
+                        type: file
+                responseMessages:
+                    - code: 201
+                      message: Created
+               """
+        user = request.user_id
+        tag_file = request.data['email']  # Particular user upload image
+        res = {}
+        try:
+            if str(user) == tag_file:  # if user
+                delete_from_s3(tag_file)  # delete image through S3 by calling service file method
+                user.image = " "  # image Null
+                user.save()  # save in db
+                res['message'] = " Successfully Deleted"  # message for deletion
+                res['Sucess'] = True
+                return JsonResponse(res, status=200)
+            else:
+                res['message'] = "Not Deleted"  # False
+                res['Sucess'] = False
+                return JsonResponse(res, status=404)
+        except Exception as e:
+            return JsonResponse('Invalid', status=False)

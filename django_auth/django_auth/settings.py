@@ -161,8 +161,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-
+LOGIN_URL = '/log_me/'
 
 SWAGGER_SETTINGS = {
     'SHOW_REQUEST_HEADERS': True,

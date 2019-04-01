@@ -1,7 +1,7 @@
+from rest_framework.fields import ImageField
 from rest_framework.validators import UniqueValidator
 from .models import User, CreateNotes,Labels
 from rest_framework import serializers  # Serializers allow complex data such as query sets and model instances to be
-# from rest_framework.pagination import PaginationSerializer
 from django.core.paginator import Paginator
 from rest_framework import pagination
 # converted to native Python data types that can then be easily rendered into JSON, XML or other content types
@@ -28,3 +28,20 @@ class LoginSerializer(serializers.ModelSerializer):  # Created the user serializ
     class Meta:
         model = User  # Contains the fields of email and a password
         fields = ['email', 'password']
+
+
+class profile(serializers.ModelSerializer):  # Created the user serializer for a Login
+    email = serializers.RegexField(regex=r"^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$",
+                                   required=True)
+    image = serializers.FileField()
+
+    class Meta:
+        model = User  # Contains the fields of email and a password
+        fields = ['email', 'image']
+
+class profile_delete(serializers.ModelSerializer):  # Created the user serializer for a Login
+    email = serializers.RegexField(regex=r"^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$",
+                                   required=True)
+    class Meta:
+        model = User  # Contains the fields of email and a password
+        fields = ['email']
