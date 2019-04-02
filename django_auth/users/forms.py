@@ -1,6 +1,7 @@
 from django import forms
 from .models import User
 from django.contrib.auth.forms import UserCreationForm
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class SignupForm(UserCreationForm):
@@ -21,6 +22,14 @@ class SignupForm(UserCreationForm):
                 user.save()
             return user
 
+
+class GenerateRandomUserForm(forms.Form):
+    total = forms.IntegerField(
+        validators=[
+            MinValueValidator(50),
+            MaxValueValidator(500)
+        ]
+    )
 
 
 

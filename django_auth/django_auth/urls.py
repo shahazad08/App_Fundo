@@ -9,7 +9,6 @@ from rest_framework.schemas import get_schema_view
 from rest_framework_swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
 # from users.swagger_schema import SwaggerSchemaView
 
-
 schema_view = get_schema_view(title='Fundoo Notes API', renderer_classes=[OpenAPIRenderer, SwaggerUIRenderer])
 if settings.DEBUG:
     urlpatterns = [

@@ -1,6 +1,13 @@
-from django.test import RequestFactory
+from distutils.command import register
+
+from django.test import RequestFactory, client
 from django.urls import reverse
-from . models import User
+from rest_framework.utils import json
+from users import models
+from users.models import User
+
+from django_auth.users.views import Registerapi
+
 
 class TestViews:
     def login_detail(self):
@@ -9,7 +16,7 @@ class TestViews:
 
 class RegisterModel:
     def test_save(self):
-            register = RestRegistration.objects.create(
+            register = Registerapi.objects.create(
                 email="sk.shahazad@gmail.com",
                 first_name="shahazad",
                 last_name="shaikh",
@@ -21,33 +28,33 @@ class RegisterModel:
             assert register.confirm_password == 500
     assert register.email == "sk.shahazad@gmail.com"
 
+
 def setUp(self):
     valid_payload = {
         'title': 'test',
         'description': "test",
         'color': "test",
-        'label': 'test'}
+        }
 
     response = client.post(
-        reverse('createnote'),
+        reverse('create'),
         data=json.dumps(valid_payload),
         content_type='application/json'
     )
+    assert response.status_code
 
-    assert (response.status_code)
 
-
-def update(self):
+def create():
     valid_payload = {
         'title': 'test',
         'description': "test",
         'color': "test",
-        'label': 'test'}
+       }
 
     response = client.post(
-        reverse('updatenote'),
+        reverse('create'),
         data=json.dumps(valid_payload),
         content_type='application/json'
     )
-    assert (response.status_code)
+    assert response.status_code
 

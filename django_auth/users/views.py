@@ -7,10 +7,12 @@ from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.http import JsonResponse
+from django.views.generic import FormView
+
 from .serializers import UserSerializer, LoginSerializer, profile, profile_delete
 from .models import User, CreateNotes, Labels
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from rest_framework.generics import CreateAPIView,DestroyAPIView  # Used for a create-only endpoints, provides a post method handler
 from .tokens import account_activation_token
 from .forms import SignupForm
@@ -22,6 +24,7 @@ from .services import redis_information, upload_image, delete_from_s3
 from self import self
 import imghdr
 from rest_framework.parsers import FileUploadParser, FormParser, MultiPartParser
+# from tasks import create_random_user_accounts
 
 
 def index(request):
@@ -78,9 +81,7 @@ class Registerapi(CreateAPIView):
         password = request.data['password']
 
         if email and password is not "":
-
             user_already = User.object.filter(email=email)
-
             if user_already:
                 res['message'] = "User Allready Exists"
                 res['success'] = True
@@ -106,6 +107,7 @@ class Registerapi(CreateAPIView):
                 return JsonResponse(res)
         else:
             return JsonResponse(res)
+
 
 def activate(request, uidb64, token):
     try:
@@ -154,7 +156,6 @@ def logins(request):
                     res['message'] = "Login Sucessfull"
                     res['success'] = True
                     res['data'] = token_encode
-
                     redis_information.set_token(self, 'token', res['data'])
                     return render(request, 'profile.html')  # After Sucessfull returns to the profile page
                 except Exception as e:  # Invalid
@@ -348,7 +349,7 @@ class upload_images(CreateAPIView):
     parser_classes = (FormParser, MultiPartParser)
 
     @method_decorator(custom_login_required)
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         """
          Create a MyModel
             Create a MyModel
@@ -399,7 +400,7 @@ class delete_image(DestroyAPIView):
     parser_classes = (FormParser, MultiPartParser)
 
     @method_decorator(custom_login_required)
-    def delete(self, request):
+    def post(self, request):
         """
                 Create a MyModel
                 ---
@@ -413,6 +414,7 @@ class delete_image(DestroyAPIView):
                       message: Created
                """
         user = request.user_id
+        create_random_user_accounts()
         tag_file = request.data['email']  # Particular user upload image
         res = {}
         try:
@@ -429,3 +431,17 @@ class delete_image(DestroyAPIView):
                 return JsonResponse(res, status=404)
         except Exception as e:
             return JsonResponse('Invalid', status=False)
+
+
+from .forms import GenerateRandomUserForm
+from .tasks import create_random_user_accounts
+
+class GenerateRandomUserView(FormView):
+    template_name = 'core/generate_random_users.html'
+    form_class = GenerateRandomUserForm
+
+    def form_valid(self, form):
+        total = form.cleaned_data.get('total')
+        create_random_user_accounts.delay(total)
+        messages.success(self.request, 'We are generating your random users! Wait a moment and refresh this page.')
+        return redirect('users_list')

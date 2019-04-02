@@ -1,10 +1,11 @@
-
 """This file contains details about services required
     i.e. Cloud Services  and Redis
 """
 import boto3
 import redis
+
 s3 = boto3.client('s3')  # Connection for S3
+
 
 def upload_image(file, tag_file, valid_image):
     """This method is used to upload the images to Amazon s3 bucket"""
@@ -26,8 +27,8 @@ def delete_from_s3(key):
 
 
 
-
 r = redis.StrictRedis(host='localhost', port=6379, db=0)
+
 
 class redis_information:
     """This class is used to set , get and delete data from Redis cache
@@ -36,18 +37,18 @@ class redis_information:
     versions of redis-py
 
     """
-    def set_token(self, key, value): # Set the token
+
+    def set_token(self, key, value):  # Set the token
         try:
-            if key and value: # If key and Value is present i.e set
-                r.set(key, value) # redis cache is set
+            if key and value:  # If key and Value is present i.e set
+                r.set(key, value)  # redis cache is set
         except Exception as e:
             print(e)
 
-    def get_token(self, key): # Get the token
+    def get_token(self, key):  # Get the token
         try:
-            value = r.get(key) # Get the key from the cache
-            if value: # if token
-                return value # return
+            value = r.get(key)  # Get the key from the cache
+            if value:  # if token
+                return value  # return
         except Exception as e:
             print(e)
-

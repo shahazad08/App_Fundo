@@ -1,17 +1,12 @@
-from users import models
 from users.models import User,CreateNotes
-from users import views
-import json
+# from users import views
 from rest_framework.filters import OrderingFilter
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
-from django.core.paginator import Paginator
 from rest_framework.generics import CreateAPIView,DestroyAPIView,UpdateAPIView  # Used for a create-only endpoints, provides a post method handler
 from rest_framework.views import APIView  # Taking the views of REST framework Request & Response
 from .serializers import PageNoteSerializer,NoteSerializer,CollaborateSerializer, ColorSerializer, UpdateSerializer, RemainderSerializer
-from django.conf import settings
 from rest_framework import generics  # For a List API use a generics
-from .paginate import PostLimitOffsetPagination, PostPageNumberPagination  # Creating our own no. of records in a Pages
+from .paginate import PostPageNumberPagination  # Creating our own no. of records in a Pages
 from rest_framework.filters import SearchFilter  # it allows users to filter down a queryset based on a model's
 from users.custom_decorators import custom_login_required
 from django.utils.decorators import method_decorator

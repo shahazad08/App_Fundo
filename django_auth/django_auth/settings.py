@@ -15,7 +15,8 @@ load_dotenv(dotenv_path=env_path)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'oz$*y0o9cc3eqj^u$!zl6tcbt3#z603w@c8c)2w=-sy(yy_a2^'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don't run with debug turned on
+# in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
@@ -173,6 +174,9 @@ SWAGGER_SETTINGS = {
         },
     },
 }
+
+
+CELERY_BROKER_URL = 'amqp://localhost'
 
 
 

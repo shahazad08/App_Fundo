@@ -1,19 +1,11 @@
-from django.shortcuts import render
-import json
-from users import models
-from users import views
 from users.models import User,CreateNotes,Labels, MapLabel
 from rest_framework.generics import CreateAPIView, DestroyAPIView, UpdateAPIView  # Used for a create-only endpoints, provides a post method handler
 from rest_framework.views import APIView  # Taking the views of REST framework Request & Response
-from rest_framework.decorators import api_view
 from .serializers import ReadLabel,LabelSerializer
-from django.conf import settings
 from rest_framework import generics, status  # For a List API use a generics
 from users.custom_decorators import custom_login_required
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
-from self import self
-import jwt
 
 
 class create(CreateAPIView):
