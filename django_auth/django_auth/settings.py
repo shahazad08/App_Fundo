@@ -179,7 +179,7 @@ SWAGGER_SETTINGS = {
 CELERY_BROKER_URL = 'amqp://localhost'
 
 
-
+CELERY_IMPORTS = ['Notes.tasks']
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/

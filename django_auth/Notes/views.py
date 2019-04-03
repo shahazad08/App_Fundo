@@ -1,4 +1,9 @@
-from users.models import User,CreateNotes
+import datetime
+
+from django.db.models import Q
+from users.models import User, CreateNotes
+# from django_auth.users.models import User
+# from django_auth.users.models import CreateNotes
 # from users import views
 from rest_framework.filters import OrderingFilter
 from django.http import JsonResponse
@@ -11,6 +16,8 @@ from rest_framework.filters import SearchFilter  # it allows users to filter dow
 from users.custom_decorators import custom_login_required
 from django.utils.decorators import method_decorator
 from users.services import redis_information
+from .tasks import auto_delete_archive,run,running
+
 import jwt
 
 
@@ -94,7 +101,13 @@ class get(APIView):
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
     def get(self, request):
         res = {}
+        # name.delay()
+        # createnote.delay()
+        # run.delay()
+
+        # running.delay()
         a_user = request.user_id.id  # get the id though a token
+        auto_delete_archive.delay(a_user)
         try:
             read_notes = CreateNotes.objects.filter(user=a_user).values()  # display the notes of a particular user
             print("****", read_notes)
@@ -565,3 +578,12 @@ class PostListAPIView(generics.ListAPIView):  # Viweing the ListAPI Views that
             res['message'] = 'Empty'
             res['success'] = False
             return JsonResponse(res, status=404)
+
+
+# class notification_remainder(CreateAPIView):
+#     serializer_class = RemainderSerializer
+#
+#
+
+
+
