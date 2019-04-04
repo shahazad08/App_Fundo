@@ -16,7 +16,7 @@ from rest_framework.filters import SearchFilter  # it allows users to filter dow
 from users.custom_decorators import custom_login_required
 from django.utils.decorators import method_decorator
 from users.services import redis_information
-from .tasks import auto_delete_archive,run,running
+from .tasks import auto_delete_archive,run,running,remainder_notification
 
 import jwt
 
@@ -426,6 +426,7 @@ class remainder(APIView): # get the remainder
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
     def get(self,request):
         auth_user = request.user_id.id
+        remainder_notification(auth_user)
         res = {}
         remainder_fields = CreateNotes.objects.filter(remainder__isnull=False, user=auth_user).values()  # check the remainder field
         # is not null

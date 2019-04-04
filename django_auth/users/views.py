@@ -414,7 +414,6 @@ class delete_image(DestroyAPIView):
                       message: Created
                """
         user = request.user_id
-        create_random_user_accounts()
         tag_file = request.data['email']  # Particular user upload image
         res = {}
         try:
