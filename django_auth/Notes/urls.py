@@ -23,5 +23,5 @@ urlpatterns = [
     path('api/note/<int:note_id>/<int:user_id>collaborator/delete/', views.deletecollaborator.as_view(), name='deletecollaborator'),
     path('api/note/<int:pk>/set_remainder/', views.create_remainder.as_view(),name='set_remainder'),
     path('api/note/pages/', views.PostListAPIView.as_view(), name='pages'),  # Paginate
-    path('api/remainder_notification/', views.reminder_notification.as_view(), name='remainder_notification'),
+    path('api/note/remainder_notification/', views.reminder_notification.as_view(), name='remainder_notification'),
 ]
