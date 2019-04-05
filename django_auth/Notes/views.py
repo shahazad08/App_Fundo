@@ -1,22 +1,31 @@
 import datetime
+from datetime import datetime
+import datetime
+from email.message import EmailMessage
 
+from django.views.decorators.http import require_POST
+from rest_framework.decorators import api_view
 from django.db.models import Q
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
 from users.models import User, CreateNotes
 # from django_auth.users.models import User
 # from django_auth.users.models import CreateNotes
 # from users import views
 from rest_framework.filters import OrderingFilter
 from django.http import JsonResponse
-from rest_framework.generics import CreateAPIView,DestroyAPIView,UpdateAPIView  # Used for a create-only endpoints, provides a post method handler
+from rest_framework.generics import CreateAPIView, DestroyAPIView, \
+    UpdateAPIView  # Used for a create-only endpoints, provides a post method handler
 from rest_framework.views import APIView  # Taking the views of REST framework Request & Response
-from .serializers import PageNoteSerializer,NoteSerializer,CollaborateSerializer, ColorSerializer, UpdateSerializer, RemainderSerializer
+from .serializers import PageNoteSerializer, NoteSerializer, CollaborateSerializer, ColorSerializer, UpdateSerializer, \
+    RemainderSerializer
 from rest_framework import generics  # For a List API use a generics
 from .paginate import PostPageNumberPagination  # Creating our own no. of records in a Pages
 from rest_framework.filters import SearchFilter  # it allows users to filter down a queryset based on a model's
 from users.custom_decorators import custom_login_required
 from django.utils.decorators import method_decorator
 from users.services import redis_information
-from .tasks import auto_delete_archive,run,running,remainder_notification
+from .tasks import auto_delete_archive, run, running
 
 import jwt
 
@@ -25,7 +34,7 @@ class create(CreateAPIView):
     """
       This module is to create a note of a specific user
       """
-    serializer_class=NoteSerializer
+    serializer_class = NoteSerializer
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
     def post(self, request):
@@ -62,6 +71,7 @@ class deletenote(DestroyAPIView):
     """
     This module is to delete a note of a specific user
     """
+
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
     def delete(self, request, pk):
         auth_user = request.user_id.id
@@ -92,6 +102,7 @@ class deletenote(DestroyAPIView):
             res['message'] = 'Note doesnt exists'  # Exception is handled
             res['success'] = False
             return JsonResponse(res, status=404)
+
 
 class get(APIView):
     '''
@@ -140,7 +151,7 @@ class delete(DestroyAPIView):
        '''
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def delete(self, request,pk):
+    def delete(self, request, pk):
         auth_user = request.user_id.id
         res = {}
         res['message'] = 'Something bad happened'
@@ -163,13 +174,14 @@ class delete(DestroyAPIView):
             res['success'] = False
             return JsonResponse(res, status=404)
 
+
 class restore(APIView):
     """
           This module is to restore a note of a specific user
           """
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def post(self, request,pk):
+    def post(self, request, pk):
         auth_user = request.user_id.id
         res = {}
         res['message'] = 'Something bad happened'
@@ -198,10 +210,10 @@ class update(UpdateAPIView):
     '''
         This module is to Update a note of a specific user
           '''
-    serializer_class=UpdateSerializer
+    serializer_class = UpdateSerializer
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def put(self,request,pk):
+    def put(self, request, pk):
         auth_user = request.user_id.id  # Get a user
         res = {}
         res['message'] = 'Something bad happened'
@@ -218,16 +230,17 @@ class update(UpdateAPIView):
                 notes.title = title  # Assign the updated fields to a requsted note
                 notes.description = description
                 notes.color = color
-                notes.remainder=remainder
+                notes.remainder = remainder
                 notes.save()  # save in a db
                 res['message'] = "Update Successfully"
                 res['success'] = True
-                res['data']=notes.id
+                res['data'] = notes.id
                 return JsonResponse(res, status=200)
         except Exception as e:  # Handle the exception
             print(e)
             res['message'] = 'Note doesnt exists'
             return JsonResponse(res, status=404)
+
 
 class archive(APIView):  # Delete a Note
     """
@@ -235,7 +248,7 @@ class archive(APIView):  # Delete a Note
     """
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def post(self, request,pk):
+    def post(self, request, pk):
         auth_user = request.user_id.id  # Request for a specific user
         res = {}
         # If any fault Exception, shows the message
@@ -246,7 +259,7 @@ class archive(APIView):  # Delete a Note
                 raise Exception('id is required')
             else:
                 note = CreateNotes.objects.get(pk=pk, user=auth_user)  # get particular note from a id
-                if note.is_archived==False:  # if archived is false, change it to true, as to move in a archived
+                if note.is_archived == False:  # if archived is false, change it to true, as to move in a archived
                     note.is_archived = True
                     note.save()  # save in a db
                     res['message'] = "Selected Note has been moved to Archive"
@@ -268,9 +281,9 @@ class isarchive(APIView):  # Delete a Note
     """
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def post(self, request,pk):
+    def post(self, request, pk):
         auth_user = request.user_id.id  # Request for a specific user
-        res = {} # If any fault Exception, shows the message
+        res = {}  # If any fault Exception, shows the message
         res['message'] = 'Something bad happened'
         res['success'] = False
         try:
@@ -294,17 +307,15 @@ class isarchive(APIView):  # Delete a Note
             return JsonResponse(res, status=404)
 
 
-
 class color(UpdateAPIView):  # Delete a Note
     """
        This module is set a color to a note of a specific user
       """
-    serializer_class=ColorSerializer
-
+    serializer_class = ColorSerializer
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def put(self, request,pk):
-        auth_user = request.user_id.id # Get a specific user
+    def put(self, request, pk):
+        auth_user = request.user_id.id  # Get a specific user
         res = {}
         res['message'] = 'Something bad happened'  # If any fault Exception, shows the message
         res['success'] = False
@@ -314,8 +325,8 @@ class color(UpdateAPIView):  # Delete a Note
             else:
                 note = CreateNotes.objects.get(pk=pk, user=auth_user)  # get a selected note from a user
                 note.color = request.data['color']  # request the color from notes model, for change
-                lenth=len(note.color)
-                if lenth<=6:
+                lenth = len(note.color)
+                if lenth <= 6:
                     note.save()  # save to db
                     res['message'] = "Color has been Changed."  # message for change color
                     res['success'] = True
@@ -338,8 +349,8 @@ class pinned(APIView):
     """
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def post(self, request,pk):
-        auth_user = request.user_id.id # get a specific user
+    def post(self, request, pk):
+        auth_user = request.user_id.id  # get a specific user
         res = {}
         res['message'] = 'Something bad happened'  # If any fault Exception, shows the message
         res['success'] = False
@@ -366,8 +377,9 @@ class ispinned(APIView):
     """
      This module is set a pinned to a note of a specific user
     """
+
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def post(self, request,pk):
+    def post(self, request, pk):
         auth_user = request.user_id.id  # get a specific user
         res = {}
         res['message'] = 'Something bad happened'  # If any fault Exception, shows the message
@@ -380,7 +392,7 @@ class ispinned(APIView):
                 if note.is_pinned:  # if not pinned
                     note.is_pinned = False  # change it to pin
                     note.save()  # save in a db
-                    res['message'] = "Notes has been Move to Unpinned" # message in a SMD format
+                    res['message'] = "Notes has been Move to Unpinned"  # message in a SMD format
                     res['success'] = True
                     res['data'] = note.id
                     return JsonResponse(res, status=200)
@@ -397,7 +409,7 @@ class copy(APIView):
     """
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def post(self, request,pk):
+    def post(self, request, pk):
         auth_user = request.user_id.id  # get note with given id
         res = {}
         res['message'] = 'Something bad happened'
@@ -418,25 +430,25 @@ class copy(APIView):
             return JsonResponse(res, status=404)
 
 
-class remainder(APIView): # get the remainder
+class remainder(APIView):  # get the remainder
     '''
           This module is to get a remainder note of a specific user
           '''
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def get(self,request):
+    def get(self, request):
         auth_user = request.user_id.id
-        remainder_notification(auth_user)
         res = {}
-        remainder_fields = CreateNotes.objects.filter(remainder__isnull=False, user=auth_user).values()  # check the remainder field
+        remainder_fields = CreateNotes.objects.filter(remainder__isnull=False,
+                                                      user=auth_user).values()  # check the remainder field
         # is not null
         try:
-            if remainder_fields: # if remainder
+            if remainder_fields:  # if remainder
                 remainder = []
-                for i in remainder_fields: # convert the  query set to a Json format
+                for i in remainder_fields:  # convert the  query set to a Json format
                     remainder.append(i)
                 return JsonResponse(remainder, safe=False)
-            else: # No remainder
+            else:  # No remainder
                 res['message'] = "No remainder set"
                 res['success'] = 'False'
                 return JsonResponse(res, safe=False)
@@ -450,11 +462,10 @@ class collaborator(CreateAPIView):
     """
         This module is to create a collaborator to a particular note of a specific user
       """
-    serializer_class=CollaborateSerializer
-
+    serializer_class = CollaborateSerializer
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def post(self, request,pk):  # get the require pk
+    def post(self, request, pk):  # get the require pk
         a_user = request.user_id.id
         res = {}
         res['message'] = 'Something bad happend'
@@ -462,14 +473,15 @@ class collaborator(CreateAPIView):
         try:
             # id = request.POST.get('id', None) # get the id of a specific note
             if pk is None:  # if id is None
-                raise Exception('id required')   # raise the exception
-            else: # if not same delete it
+                raise Exception('id required')  # raise the exception
+            else:  # if not same delete it
                 note = CreateNotes.objects.get(pk=pk, user=a_user)  # get the required id of a note
                 note_user = note.user.id  # Get the Note User ID
                 note_id = note.id
                 collaborate = request.data['collaborate']  # Accept a id of a new user
                 user = User.object.get(id=int(collaborate))  # get the details of a user through id
-                values = CreateNotes.collaborate.through.objects.filter(user_id=a_user).values()  # display the users which are collaborated with the users
+                values = CreateNotes.collaborate.through.objects.filter(
+                    user_id=a_user).values()  # display the users which are collaborated with the users
             if note_user == user.id:  # If note user_id and collaborate user is same
                 res['message'] = 'Cannot Collaborate to the same User'
                 res['success'] = False
@@ -497,64 +509,64 @@ class deletecollaborator(DestroyAPIView):
     """
            This module is to delete a collaborator to a particular note of a specific user
         """
-    serializer_class=CollaborateSerializer
-
+    serializer_class = CollaborateSerializer
 
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
-    def delete(self, request,note_id,user_id):
-        auth_user = request.user_id.id # get the requested id
+    def delete(self, request, note_id, user_id):
+        auth_user = request.user_id.id  # get the requested id
         res = {}
-        res['message'] = 'Something bad happend' # raise the exception if bad happens
+        res['message'] = 'Something bad happend'  # raise the exception if bad happens
         res['success'] = False
         try:
             if note_id is None:  # if id is none
                 raise Exception('id is required')
             else:
-                note = CreateNotes.objects.get(pk=note_id, user=auth_user) # note id with a specific user
+                note = CreateNotes.objects.get(pk=note_id, user=auth_user)  # note id with a specific user
                 auth_user = note.user.id  # Use vairable b as a Note User
                 user = User.object.get(id=user_id)  # get the details of a users from a User table
-                if auth_user == user.id: # check for a collaborator when id is same
+                if auth_user == user.id:  # check for a collaborator when id is same
                     res['message'] = 'Cannot Collaborate to the same User'
                     res['success'] = False
-                    return JsonResponse(res, status=404) # return status
-                else:   # if not same delete it
+                    return JsonResponse(res, status=404)  # return status
+                else:  # if not same delete it
                     res['message'] = 'Deleted'  # message in a SMD format
                     res['success'] = True
                     res['data'] = note.id
                     note.collaborate.remove(user)  # remove the user
-                    note.save() # save in db
+                    note.save()  # save in db
                     return JsonResponse(res, status=200)
         except Exception as e:  # if user not exists
             res['message'] = 'Note doesnt exists'
             return JsonResponse(res, status=404)
 
+
 class create_remainder(CreateAPIView):
     """
         This module is to set a remainder to a note of a specific user
         """
-    serializer_class=RemainderSerializer # Get the remainder Serializer
-    @method_decorator(custom_login_required) # Get the User
-    def post(self,request,pk): # Passs the Id
-        auth_user=request.user_id.id
-        res={}
+    serializer_class = RemainderSerializer  # Get the remainder Serializer
+
+    @method_decorator(custom_login_required)  # Get the User
+    def post(self, request, pk):  # Passs the Id
+        auth_user = request.user_id.id
+        res = {}
         try:
-            if pk is None: # If id is None
-                raise Exception("Id is required") # raise Exception
+            if pk is None:  # If id is None
+                raise Exception("Id is required")  # raise Exception
             else:
-                note = CreateNotes.objects.get(pk=pk, user=auth_user) # Assign according to the User
-                remainder=request.data['remainder'] # Get the remainder field
-                note.remainder=remainder # Set the Remainder
-                note.save() # save db
+                note = CreateNotes.objects.get(pk=pk, user=auth_user)  # Assign according to the User
+                remainder = request.data['remainder']  # Get the remainder field
+                note.remainder = remainder  # Set the Remainder
+                note.save()  # save db
                 res['message'] = 'Remainder Set Successfully '  # message in a SMD format
                 res['success'] = True
                 res['data'] = note.id
-                return JsonResponse(res,status=200)
-        except Exception as e: # return False
+                return JsonResponse(res, status=200)
+        except Exception as e:  # return False
             print(e)
-            res['message']="Note Doesnot Exists"
-            res['success']=False
-            return JsonResponse(res,status=404)
-
+            res['message'] = "Note Doesnot Exists"
+            res['success'] = False
+            return JsonResponse(res, status=404)
 
 
 class PostListAPIView(generics.ListAPIView):  # Viweing the ListAPI Views that
@@ -581,10 +593,112 @@ class PostListAPIView(generics.ListAPIView):  # Viweing the ListAPI Views that
             return JsonResponse(res, status=404)
 
 
-# class notification_remainder(CreateAPIView):
-#     serializer_class = RemainderSerializer
-#
-#
+class reminder_notification(APIView):
+    """ This API is used to send email notifications to users as reminder
+        RetriveAPIView: Used for read-only operations  ,provides get  method handlers"""
 
+    @method_decorator(custom_login_required)
+    def get(self, request):
+        global j
+        res = {}
+        auth_user = request.user_id.id
+        try:
+            dates = CreateNotes.objects.filter(remainder__isnull=False,
+                                               user=auth_user).values('id', 'title', 'remainder')
+            print(dates)
+            todays_date = datetime.datetime.today()
+            print("Todays Date", todays_date)
 
+            remind_dates = []
+            for i in dates:
+                j = i['remainder']
+                print("Remiander asdfasbhn",j)
+                if j is not None:
+                    remind_dates.append(j)
 
+                else:
+                    print("Not Append")
+            # print("Hungama", remind_dates)
+
+            for i in dates:
+
+                if todays_date == remind_dates:
+                    print("Jaga Jasos",remind_dates)
+                    data = {
+                        'title': i['title'],
+                        'remainder_date': i['remainder'],
+                        'domain': request.META.get('HTTP_HOST'),  # current_site.domain,
+                    }
+                    print("Hello World")
+                    # message = render_to_string('Notes/template/remainder_notification.html', data)
+                    # mail_subject = 'Reminder alert !'  # mail subject
+                    # to_email = request.user_id  # mail id to be sent to
+                    # print("Email",to_email)
+                    # email = EmailMessage(mail_subject,
+                    #                      to_email)  # takes 3 args: 1. mail subject 2. message 3. mail id to send
+                    # email.send()  # sends the mail
+                    item = CreateNotes.objects.get(id=i['id'])
+                    item.reminder_notification_flag = True
+                    item.save()
+                    res['message'] = "mail sent successfully"
+                    return JsonResponse(remind_dates, safe=False)
+
+                else:
+                    res['message'] = "Not Set"
+                    res['success'] = False
+                    return JsonResponse(res, status=404)
+        except Exception as e:
+            res['message'] = "Unsuccess "
+            res['success'] = False
+            print(e)
+            return JsonResponse(res, status=404)
+
+    # print("Notes",note)
+    # dates = []
+    # new_list = []
+    # today = datetime.datetime.today()
+    # for i in note:
+    #     dates.append(i['remainder'])
+    #     j = i['remainder'] - datetime.timedelta(days=2)
+    #     new_list.append(str(j))
+    # print("Two Days Remainder", new_list)
+    # print("Dates od Remainder", dates)
+    #
+    # data = CreateNotes.objects.filter(user=auth_user, remainder__in=new_list)
+    # print("Data on the Floor", data)
+
+    # j = datetime.datetime.today()
+
+    # print("Today Date", type(todays))
+    # print("Today Date", todays)
+
+    # reminder_dates = []
+    # for i in dates:
+    #     if (i - j).days < 3 and (i - j) >= 0:
+    #         reminder_dates.append(i)
+    # print("Reminder Dates", reminder_dates)
+
+    # res = {}
+    # for i in note:
+    #
+    #     notify_date = i['remainder']
+    #     print("Notify Date", type(notify_date))
+    #     print("Notify Date", notify_date)
+    #     if notify_date.date == todays:
+    #         message = render_to_string('remainder_notification.html',
+    #                                    {  # Pass the link information to the message variable
+    #                                        'user': auth_user,
+    #                                        'domain': '127.0.0.1.8000',
+    #                                        'uid': urlsafe_base64_encode(force_bytes(auth_user.pk)).decode(),
+    #
+    #                                    })
+    #         mail_subject = 'Remainder Notification'
+    #         to_email = request.user_id
+    #         email = EmailMessage(mail_subject, message, to=[to_email])
+    #         email.send()
+    #         res['message'] = "Email sent for Remainder"
+    #         res['success'] = True
+    #     else:
+    #         res['message'] = "Remainder Not Set"
+    #         res['success'] = False
+    #         return JsonResponse(res, status=404)

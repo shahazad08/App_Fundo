@@ -1,4 +1,5 @@
 import jwt
+from django.db.models import Q
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.sites.shortcuts import get_current_site
@@ -13,7 +14,8 @@ from .serializers import UserSerializer, LoginSerializer, profile, profile_delet
 from .models import User, CreateNotes, Labels
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from rest_framework.generics import CreateAPIView,DestroyAPIView  # Used for a create-only endpoints, provides a post method handler
+from rest_framework.generics import CreateAPIView, \
+    DestroyAPIView  # Used for a create-only endpoints, provides a post method handler
 from .tokens import account_activation_token
 from .forms import SignupForm
 from rest_framework.decorators import api_view
@@ -24,6 +26,8 @@ from .services import redis_information, upload_image, delete_from_s3
 from self import self
 import imghdr
 from rest_framework.parsers import FileUploadParser, FormParser, MultiPartParser
+
+
 # from tasks import create_random_user_accounts
 
 
@@ -62,6 +66,7 @@ def signup(request):
     else:
         form = SignupForm()
     return render(request, 'signup.html', {'form': form})
+
 
 class Registerapi(CreateAPIView):
     """
@@ -121,6 +126,7 @@ def activate(request, uidb64, token):
             return HttpResponse('Activation link is invalid!')
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
+
 
 @api_view(['POST'])
 @require_POST
@@ -226,6 +232,7 @@ class Login(CreateAPIView):
                 return JsonResponse(res)
         except Exception as e:
             print(e)
+
 
 def upload_profilenew(request):
     res = {}
@@ -430,4 +437,5 @@ class delete_image(DestroyAPIView):
                 return JsonResponse(res, status=404)
         except Exception as e:
             return JsonResponse('Invalid', status=False)
+
 

@@ -3,8 +3,8 @@ from distutils.command import register
 from django.test import RequestFactory, client
 from django.urls import reverse
 from rest_framework.utils import json
-from users import models
-from users.models import User
+from django_auth.users.models import *
+
 
 from django_auth.users.views import Registerapi
 
