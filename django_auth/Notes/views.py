@@ -25,7 +25,7 @@ from rest_framework.filters import SearchFilter  # it allows users to filter dow
 from users.custom_decorators import custom_login_required
 from django.utils.decorators import method_decorator
 from users.services import redis_information
-from .tasks import auto_delete_archive, run, running
+from .task import auto_delete_archive, run, running
 
 import jwt
 
