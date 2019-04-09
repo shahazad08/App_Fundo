@@ -3,10 +3,6 @@ from .models import User,CreateNotes,Labels,MapLabel
 # from adminplus.sites import AdminSitePlus
 
 admin.site.register(User)
-# admin.site.register(Notes)
-# admin.site.register(Notes)
-# admin.site.register(Notes)
-# admin.site.register(RestRegistration)
 admin.site.register(CreateNotes)
 admin.site.register(Labels)
 admin.site.register(MapLabel)

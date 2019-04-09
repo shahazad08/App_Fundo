@@ -111,11 +111,6 @@ class get(APIView):
     @method_decorator(custom_login_required)  # Decorator is called with respective to token user
     def get(self, request):
         res = {}
-        # name.delay()
-        # createnote.delay()
-        # run.delay()
-
-        # running.delay()
         a_user = request.user_id.id  # get the id though a token
         email_user=request.user_id.email
         print("Email",email_user)
