@@ -2,6 +2,7 @@ import datetime
 from datetime import datetime
 import datetime
 # from email.message import EmailMessage
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.views.decorators.http import require_POST
 from rest_framework.decorators import api_view
@@ -597,6 +598,7 @@ class reminder_notification(APIView):
 
     @method_decorator(custom_login_required)
     def get(self, request):
+        reminder_notification=False
         global j
         res = {}
         auth_user = request.user_id.id
@@ -609,25 +611,37 @@ class reminder_notification(APIView):
                 remind_dates.append(j['remainder'])
             today = todays_date.strftime("%Y-%m-%d")
             list = []
-            for i in remind_dates:
-                print(i)
-                notify_date = i.strftime("%Y-%m-%d")
+            if dates:
+                for i in remind_dates:
+                    print("Remainder Dates", i)
+                    notify_date = i.strftime("%Y-%m-%d")
 
-                if notify_date == today:
-                    data = {'title': "Reminderrrr",  # i['title'],
-                            'reminder_date': i,
-                            'domain': request.META.get('HTTP_HOST'),  # current_site.domain,
-                            }
+                    if notify_date == today:
+                        current_site = get_current_site(request)
+                        print("Current Site Domain", current_site)
+                        data = {'title': "Reminderrrr",  # i['title'],
+                                'reminder_date': i,
+                                'domain': current_site.domain,
+                                }
 
-                    # message = render_to_string('remainder_notification.html', data)
-                    # print(message)
-                    message = "Reminder messsage "
-                    mail_subject = 'Reminder alert !'  # mail subject
-                    to_email = request.user_id  # mail id to be sent to
-                    email = EmailMessage(mail_subject, message,
-                                         to=[to_email])  # takes 3 args: 1. mail subject 2. message 3. mail id to send
-                    email.send()
-                    return JsonResponse({"success": "Email sent "})
+                        print("Hello Title")
+                        message = "Reminder messsage "
+                        mail_subject = 'Reminder alert !'  # mail subject
+                        to_email = str(request.user_id)  # mail id to be sent to
+                        email = EmailMessage(mail_subject, message,
+                                             to=[
+                                                 to_email])  # takes 3 args: 1. mail subject 2. message 3. mail id to send
+                        email.send()
+                        return JsonResponse({"success": "Email sent "})
+
+                    else:
+                       reminder_notification=False
+
+            if reminder_notification==False:
+                res['message'] = "No Matches "
+                res['success'] = False
+                return JsonResponse(res, status=404)
+
 
         except Exception as e:
             res['message'] = "Unsuccess "
@@ -635,48 +649,63 @@ class reminder_notification(APIView):
             print(e)
             return JsonResponse(res, status=404)
 
-        #
-        #
-        #
-        #     remind_dates = []
-        #     for i in dates:
-        #         j = i['remainder']
-        #         print("Remiander asdfasbhn",j)
-        #         if j is not None:
-        #             remind_dates.append(j)
-        #         else:
-        #             print("Not Append")
-        #     print("****************************")
-        #     print("Hungama", str(remind_dates))
-        #     print("Hungama123", type(remind_dates))
-        #
-        #     print("TODAT",type(todays_date))
-        #
-        #     # date_strings = [d.strftime('%m-%d-%Y') for d in remind_dates]
-        #     # print("Dhjasd",type(date_strings))
-        #
-        #     for i in dates:
-        #
-        #         for j in remind_dates:
-        #             print("Reminder Date", type(i))
-        #             print("Reminder Dadsdte", type(j))
-        #             if j==todays_date:
-        #                 data = {
-        #                     'title': i['title'],
-        #                     'remainder_date': i['remainder'],
-        #                     'domain': request.META.get('HTTP_HOST'),  # current_site.domain,
-        #                     }
-        #             print("Hello World")
-        #             item = Notes.objects.get(id=i['id'])
-        #             item.reminder_notification_flag = True
-        #             item.save()
-        #             res['message'] = "mail sent successfully"
-        #             return JsonResponse(remind_dates, safe=False)
-        #
-        #         else:
-        #             res['message'] = "Not Set"
-        #             res['success'] = False
-        #             return JsonResponse(res, status=404)
-        #
 
-        #
+
+# class reminder_notification(APIView):
+#     """ This API is used to send email notifications to users as reminder
+#         RetriveAPIView: Used for read-only operations  ,provides get  method handlers"""
+#
+#     @method_decorator(custom_login_required)
+#     def get(self, request):
+#         reminder_notification =False
+#         global j
+#         res = {}
+#         auth_user = request.user_id.id
+#         try:
+#             dates = CreateNotes.objects.filter(remainder__isnull=False,
+#                                          user=auth_user).values('id', 'title', 'remainder')
+#             todays_date = datetime.datetime.today()
+#             remind_dates = []
+#             for j in dates:
+#                 remind_dates.append(j['remainder'])
+#             today = todays_date.strftime("%Y-%m-%d")
+#             for i in remind_dates:
+#                 print("Remainder Dates",i)
+#                 notify_dates = i.strftime("%Y-%m-%d")
+#                 print("Notify Dates",notify_dates)
+#
+#                 if notify_dates == today:
+#                     reminder_notification=True
+#
+#                 else:
+#
+#
+#
+#
+#             if reminder_notification==True:
+#                 current_site = get_current_site(request)
+#                 print("Current Site Domain", current_site)
+#                 data = {'title': "Reminderrrr",  # i['title'],
+#                         'reminder_date': i,
+#                         'domain': current_site.domain,
+#                         }
+#
+#                 print("Hello Title")
+#                 message = "Reminder messsage "
+#                 mail_subject = 'Reminder alert !'  # mail subject
+#                 to_email = str(request.user_id)  # mail id to be sent to
+#                 email = EmailMessage(mail_subject, message,
+#                                      to=[
+#                                          to_email])  # takes 3 args: 1. mail subject 2. message 3. mail id to send
+#                 email.send()
+#                 return JsonResponse({"success": "Email sent "})
+
+
+
+
+
+        except Exception as e:
+            res['message'] = "Unsuccess "
+            res['success'] = False
+            print(e)
+            return JsonResponse(res, status=404)
