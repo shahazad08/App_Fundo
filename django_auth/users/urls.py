@@ -42,9 +42,4 @@ urlpatterns = [
     path('api/trash/', views.trash, name='trash'),  # Displays the Table data in a front view using jinga template
     path('api/showlabels/', views.showlabels, name='showlabels'),
     path('api/login/', views.Login.as_view(), name='login'),
-
-
-
-
-
 ]

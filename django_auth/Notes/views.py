@@ -1,7 +1,7 @@
 import datetime
 from datetime import datetime
 import datetime
-#from email.message import EmailMessage
+# from email.message import EmailMessage
 from django.core.mail import EmailMessage
 from django.views.decorators.http import require_POST
 from rest_framework.decorators import api_view
@@ -9,9 +9,7 @@ from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from users.models import User, CreateNotes
-# from django_auth.users.models import User
-# from django_auth.users.models import CreateNotes
-# from users import views
+
 from rest_framework.filters import OrderingFilter
 from django.http import JsonResponse
 from rest_framework.generics import CreateAPIView, DestroyAPIView, \
@@ -440,7 +438,7 @@ class remainder(APIView):  # get the remainder
         auth_user = request.user_id.id
         res = {}
         remainder_fields = CreateNotes.objects.filter(remainder__isnull=False,
-                                                      user=auth_user).values()  # check the remainder field
+                                                user=auth_user).values()  # check the remainder field
         # is not null
         try:
             if remainder_fields:  # if remainder
@@ -487,7 +485,7 @@ class collaborator(CreateAPIView):
                 res['success'] = False
                 return JsonResponse(res, status=404)
             elif CreateNotes.collaborate.through.objects.filter(user_id=user.id,
-                                                                createnotes_id=note.id):  # Checking of a same user id and create note id for as if its exist user or not
+                                                          createnotes_id=note.id):  # Checking of a same user id and create note id for as if its exist user or not
                 res['message'] = 'User Allready Exists'
                 res['success'] = False
                 return JsonResponse(res, status=404)
@@ -604,125 +602,38 @@ class reminder_notification(APIView):
         auth_user = request.user_id.id
         try:
             dates = CreateNotes.objects.filter(remainder__isnull=False,
-                                               user=auth_user).values('id', 'title', 'remainder')
-            #print(dates)
+                                         user=auth_user).values('id', 'title', 'remainder')
             todays_date = datetime.datetime.today()
-            #print("Todays Date", todays_date)
-
-
-
-
-
-
-            remind_dates=[]
+            remind_dates = []
             for j in dates:
-
                 remind_dates.append(j['remainder'])
-                #print("Remind Dates",remind_dates)
-
-
-
-            # for i in remind_dates:
-            #     if
             today = todays_date.strftime("%Y-%m-%d")
-            list=[]
+            list = []
             for i in remind_dates:
                 print(i)
                 notify_date = i.strftime("%Y-%m-%d")
 
                 if notify_date == today:
-                   # notify_dates=notify_date
-                    #list.append(notify_dates)
-                    data = {'title': "Reminderrrr", #i['title'],
+                    data = {'title': "Reminderrrr",  # i['title'],
                             'reminder_date': i,
                             'domain': request.META.get('HTTP_HOST'),  # current_site.domain,
                             }
 
-                   # message = render_to_string('remainder_notification.html', data)
-                    #print(message)
-                    message= "Reminder messsage "
+                    # message = render_to_string('remainder_notification.html', data)
+                    # print(message)
+                    message = "Reminder messsage "
                     mail_subject = 'Reminder alert !'  # mail subject
                     to_email = request.user_id  # mail id to be sent to
-                    email = EmailMessage(mail_subject, message,to=[to_email])  # takes 3 args: 1. mail subject 2. message 3. mail id to send
+                    email = EmailMessage(mail_subject, message,
+                                         to=[to_email])  # takes 3 args: 1. mail subject 2. message 3. mail id to send
                     email.send()
-                    return JsonResponse({"success":"Email sent "})
+                    return JsonResponse({"success": "Email sent "})
 
-
-            #else:
-                 #print("Out")
-
-                 #print("Data List",list)
-
-
-                     # sends the mail
-                    #res['message'] = 'Mail Sent Successfully'
-                    #res['success']=True
-                    #   print("Date Matches",notify_date)
-                    #return JsonResponse(res,status=200)
-                #else:
-                   # print("Not")
-            #         data = {
-            #             'title': i['title'],
-            #             'reminder_date': i['reminder'],
-            #             'domain': request.META.get('HTTP_HOST'),  # current_site.domain,
-            #         }
-            #
-            #         message = render_to_string('Notes/reminder_notification.html', data)
-            #         mail_subject = 'Reminder alert !'  # mail subject
-            #         to_email = request.user_id  # mail id to be sent to
-            #         email = EmailMessage(mail_subject, message,
-            #                              to=[to_email])  # takes 3 args: 1. mail subject 2. message 3. mail id to send
-            #         email.send()  # sends the mail
-            #         item = CreateNotes.objects.get(id=i['id'])
-            #         item.reminder_notification_flag = True
-            #         item.save()
-            #         res['message'] = "mail sent successfully"
-            # return JsonResponse(notify_date, safe=False)
-                #     res['message']='Mail Sent Successfully'
-                #     res['success']=True
-                # #   print("Date Matches",notify_date)
-                #     return JsonResponse(res,status=200)
-                # else:
-                #     print("Not")
-                #     # print("Date Matches",notify_date)
-                #     # print("DADI", todays_date)
-                # # else:
-                # #     res['message'] = 'Unsuccess'
-                # #     res['success'] = False
-                # #     return JsonResponse(res, status=200)
-                # #     # print("Not Matches",notify_date)
-                # #     # print("DADA",todays_date)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        except Exception as e:
+            res['message'] = "Unsuccess "
+            res['success'] = False
+            print(e)
+            return JsonResponse(res, status=404)
 
         #
         #
@@ -756,7 +667,7 @@ class reminder_notification(APIView):
         #                     'domain': request.META.get('HTTP_HOST'),  # current_site.domain,
         #                     }
         #             print("Hello World")
-        #             item = CreateNotes.objects.get(id=i['id'])
+        #             item = Notes.objects.get(id=i['id'])
         #             item.reminder_notification_flag = True
         #             item.save()
         #             res['message'] = "mail sent successfully"
@@ -767,10 +678,5 @@ class reminder_notification(APIView):
         #             res['success'] = False
         #             return JsonResponse(res, status=404)
         #
-        except Exception as e:
-            res['message'] = "Unsuccess "
-            res['success'] = False
-            print(e)
-            return JsonResponse(res, status=404)
-        #
 
+        #

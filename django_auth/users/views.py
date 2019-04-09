@@ -294,7 +294,7 @@ def delete_profile(request):
 
 def showarchive(request):  # Archive Show
     res = {}
-    notes = CreateNotes.objects.all().order_by('-created_time')  # Sort the Notes according to the time
+    notes = Notes.objects.all().order_by('-created_time')  # Sort the Notes according to the time
     try:
         if notes:
             return render(request, 'notes/index1.html', {'notes': notes})
@@ -308,7 +308,7 @@ def showarchive(request):  # Archive Show
 
 def trash(request):
     res = {}
-    notes = CreateNotes.objects.all().order_by('-created_time')
+    notes = Notes.objects.all().order_by('-created_time')
     try:
         if notes is not None:
             return render(request, 'notes/trash.html', {'notes': notes})
@@ -323,7 +323,7 @@ def trash(request):
 
 def showpinned(request):
     res = {}
-    notes = CreateNotes.objects.all().order_by('-created_time')
+    notes = Notes.objects.all().order_by('-created_time')
     try:
         if notes:
             return render(request, 'notes/pinned.html', {'notes': notes})
@@ -347,7 +347,7 @@ def showlabels(request):
 
 
 def table(request):  # Display the contents of the tables using a Jinga Template
-    notes = CreateNotes.objects.all().order_by('-created_time')  # Sort the Notes according to the time
+    notes = Notes.objects.all().order_by('-created_time')  # Sort the Notes according to the time
     return render(request, 'notes/index.html', {'notes': notes})
 
 

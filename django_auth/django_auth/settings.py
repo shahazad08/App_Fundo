@@ -71,6 +71,7 @@ CACHES = {
 CACHE_TTL = 60 * 15
 
 INSTALLED_APPS = [
+    'users',
     'django.contrib.auth',
     'django.contrib.admin',
     'django.contrib.contenttypes',
@@ -80,7 +81,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'rest_framework',
     'django_filters',
-    'users',
+
 ]
 
 MIDDLEWARE = [
@@ -174,6 +175,7 @@ SWAGGER_SETTINGS = {
         },
     },
 }
+
 
 
 CELERY_BROKER_URL = 'amqp://localhost'

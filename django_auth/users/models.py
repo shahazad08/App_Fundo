@@ -50,7 +50,6 @@ class User(AbstractBaseUser, PermissionsMixin):  # User model is the built-in Dj
 
 
 class CreateNotes(models.Model):
-
     title = models.CharField(max_length=150,default=None)
     description = models.TextField()
     created_time = models.DateTimeField(auto_now_add=True, null=True)
@@ -64,12 +63,11 @@ class CreateNotes(models.Model):
     label = models.CharField(max_length=50,default=None,null=True)
     collaborate = models.ManyToManyField(User, null=True, blank=True, related_name='collaborated_user')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owner', null=True, blank=True)
-    archive_time = models.DateTimeField(blank=True, null=True)
-    trash_time = models.DateTimeField(blank=True, null=True)
     reminder_notification = models.BooleanField(default=False, blank=True)
 
     def __str__(self):
         return self.title
+
 
 class Labels(models.Model):
     label_name = models.CharField(max_length=150)
@@ -79,8 +77,9 @@ class Labels(models.Model):
     def __str__(self):
         return self.label_name
 
+
 class MapLabel(models.Model):
-    note_id = models.ForeignKey(CreateNotes, on_delete=models.CASCADE,null=True, blank=True,db_constraint=False)
+    note_id = models.ForeignKey(CreateNotes, on_delete=models.CASCADE, null=True, blank=True, db_constraint=False)
     label_id = models.ForeignKey(Labels, on_delete=models.CASCADE,null=True, blank=True,db_constraint=False)
     created_time = models.DateTimeField(auto_now_add=True, null=True)
 

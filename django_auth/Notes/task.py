@@ -20,7 +20,7 @@ from celery import shared_task
 from django.utils.decorators import method_decorator
 
 from self import self
-# from users.models import CreateNotes
+# from users.models import Notes
 # from users.services import redis_information
 from users.services import redis_information
 

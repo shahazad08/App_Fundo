@@ -1,4 +1,4 @@
-from users.models import User,CreateNotes,Labels, MapLabel
+from users.models import User, CreateNotes, Labels, MapLabel
 from rest_framework.generics import CreateAPIView, DestroyAPIView, UpdateAPIView  # Used for a create-only endpoints, provides a post method handler
 from rest_framework.views import APIView  # Taking the views of REST framework Request & Response
 from .serializers import ReadLabel,LabelSerializer
@@ -185,7 +185,7 @@ class getLabelOnNotes(CreateAPIView):
                 data = []  # Created a Empty List
                 for i in label:  # Gets a Note id from a label data and store it in a list
                     data.append(i['note_id_id'])
-                items = CreateNotes.objects.filter(id__in=data, user=auth_user).values() # Gets the Notes of a specific User
+                items =CreateNotes.objects.filter(id__in=data, user=auth_user).values() # Gets the Notes of a specific User
                 if items:   # if notes
                     print (items)
                     notes_data = [] # Store the Notes in a list
