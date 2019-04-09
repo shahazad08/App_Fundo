@@ -615,7 +615,6 @@ class reminder_notification(APIView):
 
                     if notify_date == today:
                         current_site = get_current_site(request)
-                        print("Current Site Domain", current_site)
                         data = {'title': "Reminderrrr",  # i['title'],
                                 'reminder_date': i,
                                 'domain': current_site.domain,
