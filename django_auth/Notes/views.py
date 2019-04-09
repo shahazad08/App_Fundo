@@ -24,7 +24,7 @@ from rest_framework.filters import SearchFilter  # it allows users to filter dow
 from users.custom_decorators import custom_login_required
 from django.utils.decorators import method_decorator
 from users.services import redis_information
-from .task import auto_delete_archive, run, running
+from .tasks import auto_delete_archive, run, running
 
 import jwt
 
@@ -117,7 +117,9 @@ class get(APIView):
 
         # running.delay()
         a_user = request.user_id.id  # get the id though a token
-        auto_delete_archive.delay(a_user)
+        email_user=request.user_id.email
+        print("Email",email_user)
+        auto_delete_archive.delay(a_user,email_user)
         try:
             read_notes = CreateNotes.objects.filter(user=a_user).values()  # display the notes of a particular user
             print("****", read_notes)
@@ -592,6 +594,7 @@ class PostListAPIView(generics.ListAPIView):  # Viweing the ListAPI Views that
             return JsonResponse(res, status=404)
 
 
+
 class reminder_notification(APIView):
     """ This API is used to send email notifications to users as reminder
         RetriveAPIView: Used for read-only operations  ,provides get  method handlers"""
@@ -610,7 +613,6 @@ class reminder_notification(APIView):
             for j in dates:
                 remind_dates.append(j['remainder'])
             today = todays_date.strftime("%Y-%m-%d")
-            list = []
             if dates:
                 for i in remind_dates:
                     print("Remainder Dates", i)
@@ -633,7 +635,6 @@ class reminder_notification(APIView):
                                                  to_email])  # takes 3 args: 1. mail subject 2. message 3. mail id to send
                         email.send()
                         return JsonResponse({"success": "Email sent "})
-
                     else:
                        reminder_notification=False
 
@@ -642,7 +643,6 @@ class reminder_notification(APIView):
                 res['success'] = False
                 return JsonResponse(res, status=404)
 
-
         except Exception as e:
             res['message'] = "Unsuccess "
             res['success'] = False
@@ -650,62 +650,3 @@ class reminder_notification(APIView):
             return JsonResponse(res, status=404)
 
 
-
-# class reminder_notification(APIView):
-#     """ This API is used to send email notifications to users as reminder
-#         RetriveAPIView: Used for read-only operations  ,provides get  method handlers"""
-#
-#     @method_decorator(custom_login_required)
-#     def get(self, request):
-#         reminder_notification =False
-#         global j
-#         res = {}
-#         auth_user = request.user_id.id
-#         try:
-#             dates = CreateNotes.objects.filter(remainder__isnull=False,
-#                                          user=auth_user).values('id', 'title', 'remainder')
-#             todays_date = datetime.datetime.today()
-#             remind_dates = []
-#             for j in dates:
-#                 remind_dates.append(j['remainder'])
-#             today = todays_date.strftime("%Y-%m-%d")
-#             for i in remind_dates:
-#                 print("Remainder Dates",i)
-#                 notify_dates = i.strftime("%Y-%m-%d")
-#                 print("Notify Dates",notify_dates)
-#
-#                 if notify_dates == today:
-#                     reminder_notification=True
-#
-#                 else:
-#
-#
-#
-#
-#             if reminder_notification==True:
-#                 current_site = get_current_site(request)
-#                 print("Current Site Domain", current_site)
-#                 data = {'title': "Reminderrrr",  # i['title'],
-#                         'reminder_date': i,
-#                         'domain': current_site.domain,
-#                         }
-#
-#                 print("Hello Title")
-#                 message = "Reminder messsage "
-#                 mail_subject = 'Reminder alert !'  # mail subject
-#                 to_email = str(request.user_id)  # mail id to be sent to
-#                 email = EmailMessage(mail_subject, message,
-#                                      to=[
-#                                          to_email])  # takes 3 args: 1. mail subject 2. message 3. mail id to send
-#                 email.send()
-#                 return JsonResponse({"success": "Email sent "})
-
-
-
-
-
-        except Exception as e:
-            res['message'] = "Unsuccess "
-            res['success'] = False
-            print(e)
-            return JsonResponse(res, status=404)
