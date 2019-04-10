@@ -1,3 +1,4 @@
+
 import os
 import datetime
 from dotenv import load_dotenv
@@ -17,6 +18,7 @@ SECRET_KEY = 'oz$*y0o9cc3eqj^u$!zl6tcbt3#z603w@c8c)2w=-sy(yy_a2^'
 
 # SECURITY WARNING: don't run with debug turned on
 # in production!
+
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
@@ -71,7 +73,6 @@ CACHES = {
 CACHE_TTL = 60 * 15
 
 INSTALLED_APPS = [
-    'users',
     'django.contrib.auth',
     'django.contrib.admin',
     'django.contrib.contenttypes',
@@ -81,6 +82,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'rest_framework',
     'django_filters',
+    'users',
 
 ]
 

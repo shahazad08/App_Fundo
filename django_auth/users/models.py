@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-from django.core.validators import RegexValidator
 from django.db import models, transaction
 from django.utils import timezone
 from django.contrib.auth.models import (AbstractBaseUser, PermissionsMixin, BaseUserManager)
@@ -84,3 +83,10 @@ class MapLabel(models.Model):
 
     def __str__(self):
         return str(self.note_id)
+
+class customer(models.Model):
+    user_name=models.CharField(max_length=150)
+    address=models.CharField(max_length=150)
+
+    def __str__(self):
+        return str(self.user_name)

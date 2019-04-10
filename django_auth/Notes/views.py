@@ -368,7 +368,6 @@ class pinned(APIView):
             res['message'] = 'Note doesnt exists'
             return JsonResponse(res, status=404)
 
-
 class ispinned(APIView):
     """
      This module is set a pinned to a note of a specific user
@@ -397,7 +396,6 @@ class ispinned(APIView):
         except Exception as e:  # catch exception if note doesnt exists
             res['message'] = 'Note doesnt exists'
             return JsonResponse(res, status=404)
-
 
 class copy(APIView):
     """
@@ -644,3 +642,4 @@ class reminder_notification(APIView):
             return JsonResponse(res, status=404)
 
 
+# DJANGO_SETTINGS_MODULE=django_auth.django_auth.settings
