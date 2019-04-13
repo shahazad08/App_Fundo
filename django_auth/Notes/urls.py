@@ -2,7 +2,6 @@
 from django.conf.urls import url   # A function that takes a prefix, and an arbitrary number of URL patterns,
 # and returns a list of URL patterns in the format Django needs.
 from django.urls import path
-
 from . import views
 
 urlpatterns = [
@@ -24,4 +23,6 @@ urlpatterns = [
     path('api/note/<int:pk>/set_remainder/', views.create_remainder.as_view(),name='set_remainder'),
     path('api/note/pages/', views.PostListAPIView.as_view(), name='pages'),  # Paginate
     path('api/note/remainder_notification/', views.reminder_notification.as_view(), name='remainder_notification'),
+    path('api/note/search/', views.search_note.as_view(), name='search'),
+
 ]

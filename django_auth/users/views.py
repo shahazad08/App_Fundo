@@ -9,6 +9,7 @@ from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.http import JsonResponse
 from django.views.generic import FormView
+from urllib3.util import url
 
 from .serializers import UserSerializer, LoginSerializer, profile, profile_delete
 from .models import User, CreateNotes, Labels
@@ -22,13 +23,10 @@ from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate, login
 from .custom_decorators import custom_login_required
 from django.utils.decorators import method_decorator
-from .services import redis_information, upload_image, delete_from_s3
+from .services import redis_information, upload_image, delete_from_s3,image_url
 from self import self
 import imghdr
 from rest_framework.parsers import FileUploadParser, FormParser, MultiPartParser
-
-
-# from tasks import create_random_user_accounts
 
 
 def index(request):
@@ -78,9 +76,7 @@ class Registerapi(CreateAPIView):
         res = {"message": "something bad happened",
                "data": {},
                "success": False}
-        print(request.data)
         email = request.data['email']
-        print(email)
         first_name = request.data['first_name']
         last_name = request.data['last_name']
         password = request.data['password']
@@ -294,7 +290,7 @@ def delete_profile(request):
 
 def showarchive(request):  # Archive Show
     res = {}
-    notes = Notes.objects.all().order_by('-created_time')  # Sort the Notes according to the time
+    notes = CreateNotes.objects.all().order_by('-created_time')  # Sort the Notes according to the time
     try:
         if notes:
             return render(request, 'notes/index1.html', {'notes': notes})
@@ -308,7 +304,7 @@ def showarchive(request):  # Archive Show
 
 def trash(request):
     res = {}
-    notes = Notes.objects.all().order_by('-created_time')
+    notes = CreateNotes.objects.all().order_by('-created_time')
     try:
         if notes is not None:
             return render(request, 'notes/trash.html', {'notes': notes})
@@ -323,7 +319,7 @@ def trash(request):
 
 def showpinned(request):
     res = {}
-    notes = Notes.objects.all().order_by('-created_time')
+    notes = CreateNotes.objects.all().order_by('-created_time')
     try:
         if notes:
             return render(request, 'notes/pinned.html', {'notes': notes})
@@ -347,8 +343,10 @@ def showlabels(request):
 
 
 def table(request):  # Display the contents of the tables using a Jinga Template
-    notes = Notes.objects.all().order_by('-created_time')  # Sort the Notes according to the time
+    notes = CreateNotes.objects.all().order_by('-created_time')  # Sort the Notes according to the time
     return render(request, 'notes/index.html', {'notes': notes})
+
+
 
 
 class upload_images(CreateAPIView):
@@ -375,16 +373,16 @@ class upload_images(CreateAPIView):
         user = request.user_id
         try:
             image = request.FILES.get('image')  # Get the image File
-            print('image', type(image))
             tag_file = request.data['email']
-            print(tag_file)
+            image_path=image_url(tag_file)
+            print("Image Url", image_path)
             valid_image = imghdr.what(image)
             print(valid_image)
-            print("User", user)
             if str(user) == tag_file:  # if user:
                 if valid_image:  # if Valid Image
-                    upload_image(image, tag_file, valid_image)  # Upload the image by calling the service file
-                    user.image = str(image)  # save a image file in db
+                    upload_image(image, tag_file,image_path)  # Upload the image by calling the service file
+                    user.image_path = str(image_path)  # save a image file in db
+                    user.image=str(image)
                     user.save()  # file save
                     res['message'] = "Sucessfully Uploaded the Image"  # message
                     res['Success'] = True
@@ -398,8 +396,10 @@ class upload_images(CreateAPIView):
                 res['Success'] = False
                 return JsonResponse(res, status=404)
         except Exception as e:
+            print(e)
             res['message'] = "Not Valid"  # Invalid User
             return JsonResponse(res, status=404)
+
 
 
 class delete_image(DestroyAPIView):
@@ -427,6 +427,7 @@ class delete_image(DestroyAPIView):
             if str(user) == tag_file:  # if user
                 delete_from_s3(tag_file)  # delete image through S3 by calling service file method
                 user.image = " "  # image Null
+                user.image_path=""
                 user.save()  # save in db
                 res['message'] = " Successfully Deleted"  # message for deletion
                 res['Sucess'] = True
@@ -437,5 +438,4 @@ class delete_image(DestroyAPIView):
                 return JsonResponse(res, status=404)
         except Exception as e:
             return JsonResponse('Invalid', status=False)
-
 

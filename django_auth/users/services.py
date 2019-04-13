@@ -7,12 +7,21 @@ import redis
 s3 = boto3.client('s3')  # Connection for S3
 
 
-def upload_image(file, tag_file, valid_image):
+def upload_image(file, tag_file,image_path):
     """This method is used to upload the images to Amazon s3 bucket"""
+
     try:
-        if valid_image:  # If Image is Valid
-            key = tag_file  # Assign the Key
-            s3.upload_fileobj(file, 'fundoobucket', Key=key)  # Upload the image in a S3
+        key = tag_file  # Assign the Key
+        s3.upload_fileobj(file, 'fundoobucket', Key=key)  # Upload the image in a S3
+    except Exception as e:
+        print(e)
+
+def image_url(tag_file):
+    """This method is get the url of a images from Amazon s3 bucket"""
+    try:
+        key=tag_file
+        image_path = '{}/{}/{}'.format(s3.meta.endpoint_url, 'fundoobucket', key)
+        return image_path
     except Exception as e:
         print(e)
 

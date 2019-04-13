@@ -6,7 +6,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.views.decorators.http import require_POST
 from rest_framework.decorators import api_view
-from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from users.models import User, CreateNotes
@@ -14,10 +13,10 @@ from users.models import User, CreateNotes
 from rest_framework.filters import OrderingFilter
 from django.http import JsonResponse
 from rest_framework.generics import CreateAPIView, DestroyAPIView, \
-    UpdateAPIView  # Used for a create-only endpoints, provides a post method handler
+    UpdateAPIView,RetrieveAPIView # Used for a create-only endpoints, provides a post method handler
 from rest_framework.views import APIView  # Taking the views of REST framework Request & Response
 from .serializers import PageNoteSerializer, NoteSerializer, CollaborateSerializer, ColorSerializer, UpdateSerializer, \
-    RemainderSerializer
+    RemainderSerializer,SearchSerializer
 from rest_framework import generics  # For a List API use a generics
 from .paginate import PostPageNumberPagination  # Creating our own no. of records in a Pages
 from rest_framework.filters import SearchFilter  # it allows users to filter down a queryset based on a model's
@@ -103,7 +102,7 @@ class deletenote(DestroyAPIView):
             return JsonResponse(res, status=404)
 
 
-class get(APIView):
+class get(RetrieveAPIView):
     '''
             This Moudule is to Read a notes of a specific user
         '''
@@ -629,7 +628,6 @@ class reminder_notification(APIView):
                         return JsonResponse({"success": "Email sent "})
                     else:
                        reminder_notification=False
-
             if reminder_notification==False:
                 res['message'] = "No Matches "
                 res['success'] = False
@@ -642,4 +640,31 @@ class reminder_notification(APIView):
             return JsonResponse(res, status=404)
 
 
-# DJANGO_SETTINGS_MODULE=django_auth.django_auth.settings
+class search_note(RetrieveAPIView):
+    serializer_class = SearchSerializer
+    @method_decorator(custom_login_required)
+    def post(self,request):
+        res = {}
+        auth_user=request.user_id.id
+        try:
+            title = request.data['title']
+            if title:
+                note = CreateNotes.objects.filter(title=title, user=auth_user).values('id', 'title', 'description','color')
+                print('Search Notes', note)
+                search_notes = []
+                for i in note:
+                    search_notes.append(i)
+                return JsonResponse(search_notes, safe=False)
+            else:
+                res['message'] = "Not Present"
+                res['success'] = False
+                return JsonResponse(res, status=404)
+        except Exception as e:
+            res['message'] = ""
+            res['success'] = False
+            return JsonResponse(res, status=404)
+
+
+
+
+

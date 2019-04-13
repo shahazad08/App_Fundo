@@ -18,21 +18,14 @@ class NoteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CreateNotes
-        fields = ('title', 'description', 'color')
+        fields = '__all__'
 
 
-class CollaborateSerializer(serializers.ModelSerializer):
+class CollaborateSerializer(serializers.Serializer):
     collaborate=serializers.IntegerField()
-    class Meta:
-        model = CreateNotes
-        fields = ['collaborate']
 
-class ColorSerializer(serializers.ModelSerializer):
+class ColorSerializer(serializers.Serializer):
     color = serializers.RegexField(regex=r"^[-\w\s]+[-\w\s]+(?:,[-\w\s]*)*$", required=True)
-    class Meta:
-        model = CreateNotes
-        fields = ['color']
-
 
 class UpdateSerializer(serializers.ModelSerializer):
     title = serializers.RegexField(regex=r"^[a-zA-Z0-9.' ']+$",
@@ -43,12 +36,13 @@ class UpdateSerializer(serializers.ModelSerializer):
         model = CreateNotes
         fields = '__all__'
 
-class RemainderSerializer(serializers.ModelSerializer):
+class RemainderSerializer(serializers.Serializer):
     remainder = serializers.DateTimeField()
 
-    class Meta:
-        model=CreateNotes
-        fields=['remainder']
+class SearchSerializer(serializers.Serializer):
+    title=serializers.CharField(max_length=20)
+
+
 
 
 

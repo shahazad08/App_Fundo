@@ -10,7 +10,6 @@ from rest_framework import serializers  # Serializers allow complex data such as
 class UserSerializer(serializers.ModelSerializer):  # Created the User Serializer for all the fields in a model
     date_joined = serializers.ReadOnlyField()  # date joined should be in a read_only modes
     password = serializers.CharField(style={'input_type': 'password'})  # password should be properly validated
-    # email = serializers.EmailField(validators=[UniqueValidator(queryset=User.object.all())])
     email = serializers.RegexField(regex=r"^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$",
                                    required=True)
     first_name = serializers.CharField(max_length=30)
@@ -34,9 +33,10 @@ class profile(serializers.ModelSerializer):  # Created the user serializer for a
                                    required=True)
     image = serializers.ImageField(required=True)
 
+
     class Meta:
         model = User  # Contains the fields of email and a password
-        fields = ['email', 'image']
+        fields = ['email','image', 'image_path']
 
 class profile_delete(serializers.ModelSerializer):  # Created the user serializer for a Login
     email = serializers.RegexField(regex=r"^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})$",
