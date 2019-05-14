@@ -43,3 +43,6 @@ urlpatterns = [
     path('api/showlabels/', views.showlabels, name='showlabels'),
     path('api/login/', views.Login.as_view(), name='login'),
 ]
+
+# https://www.techiediaries.com/angular-rxjs-tutorial/
+# https://www.twilio.com/blog/2018/05/angular-routing-single-page-applications-javascript-nodejs.html

@@ -10,7 +10,6 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.http import JsonResponse
 from django.views.generic import FormView
 from urllib3.util import url
-
 from .serializers import UserSerializer, LoginSerializer, profile, profile_delete
 from .models import User, CreateNotes, Labels
 from django.http import HttpResponse
@@ -375,9 +374,7 @@ class upload_images(CreateAPIView):
             image = request.FILES.get('image')  # Get the image File
             tag_file = request.data['email']
             image_path=image_url(tag_file)
-            print("Image Url", image_path)
-            valid_image = imghdr.what(image)
-            print(valid_image)
+            valid_image = imghdr.what(image)  # Check Valid Image Type
             if str(user) == tag_file:  # if user:
                 if valid_image:  # if Valid Image
                     upload_image(image, tag_file,image_path)  # Upload the image by calling the service file

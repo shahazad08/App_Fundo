@@ -73,9 +73,6 @@ def auto_delete_archive(a_user,email_user):
                 delete_item = CreateNotes.objects.get(id=j['id'])
                 delete_item.delete()
                 print("Days Matches")
-                item = CreateNotes.objects.get(pk=i['id'])
-                item.trash = True
-                item.save()
                 current_site = '127.0.0.8000'
                 print("Current Site Domain", current_site)
                 data = {'title': "Reminderrrr",  # i['title'],

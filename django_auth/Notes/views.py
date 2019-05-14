@@ -125,8 +125,10 @@ class get(RetrieveAPIView):
                 collab.append(i['createnotes_id'])  # append with respect to the note id
             collab_notes = CreateNotes.objects.filter(id__in=collab).values().order_by(
                 '-created_time')  # id__in indicates to take all the values
-            # print("collab Notes -------------", collab_notes)
+            # print("collab Notes ------        -------", collab_notes)
             merged = read_notes | collab_notes  # as to merging the 2 query sets into one
+
+            print('Merged Values',merged)
             l = []  # Converting the query sets to a json format
             for i in merged:
                 l.append(i)
@@ -473,6 +475,7 @@ class collaborator(CreateAPIView):
                 note_id = note.id
                 collaborate = request.data['collaborate']  # Accept a id of a new user
                 user = User.object.get(id=int(collaborate))  # get the details of a user through id
+                print("userss",type(user))
                 values = CreateNotes.collaborate.through.objects.filter(
                     user_id=a_user).values()  # display the users which are collaborated with the users
             if note_user == user.id:  # If note user_id and collaborate user is same
@@ -487,6 +490,7 @@ class collaborator(CreateAPIView):
             else:
                 print("user", user.id)
                 note.collaborate.add(user)  # adds the user to the note
+
                 note.save()  # save the note
                 res['message'] = 'Success'
                 res['success'] = True
